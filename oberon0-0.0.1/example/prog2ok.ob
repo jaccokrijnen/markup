@@ -1,0 +1,22 @@
+MODULE prog2;
+CONST X = 1;
+      Y = 2;
+TYPE tipo = INTEGER;
+VAR x, y, j : tipo; b: BOOLEAN;
+BEGIN
+        b := X = 3;
+        x := 2;
+        CASE x OF
+         X,2,10 : j := 0 |
+         Y .. 10 : j := 1 
+         ELSE j := 10
+        END;
+        WHILE j < 10 DO 
+           j := j+1;
+           b := ~b
+        END;
+        y := 0;
+        FOR x := 1 TO j DO
+           y := y + x * Y 
+        END
+END prog2.

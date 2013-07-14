@@ -1,0 +1,37 @@
+MODULE hola;
+CONST X = 10;
+TYPE tipo = INTEGER;
+VAR x: tipo; b : BOOLEAN;
+
+PROCEDURE Proc1 ( VAR var1 : INTEGER; var2, var3 : tipo );
+VAR x : INTEGER;
+PROCEDURE Proc11;
+BEGIN
+  x := X
+END Proc11;
+
+BEGIN
+  Proc11;
+  var1 := var2 + var3 + x;
+  Write(var1); WriteLn
+END Proc1;
+
+
+PROCEDURE Proc2 ( VAR var1 : INTEGER; var2, var3 : BOOLEAN );
+VAR x : INTEGER;
+BEGIN
+  x := 23;
+  IF var2 THEN 
+    var1 := x 
+  ELSIF var3 THEN
+    var1 := x + 1 
+  ELSE
+    var1 := 0
+  END
+END Proc2;
+
+BEGIN
+        Proc1(x,2,3);
+        Proc2(x,b,2>3);
+        Write(x); WriteLn 
+END hola.

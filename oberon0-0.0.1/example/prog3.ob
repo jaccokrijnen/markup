@@ -1,0 +1,48 @@
+MODULE hola;
+CONST X = (2 >= + 3); Y = (1 # -4) - 3; Z = 2 + x;
+      W = W + 1;
+TYPE tipo = INTEGER;
+     maltipo = X;
+     Y = INTEGER;
+VAR xx, jj : tipo; aa: tipo; y : INTEGER;
+PROCEDURE Read ( VAR var1 : INTEGER; var2, var3 : X );
+BEGIN
+  jj := 23 + z
+END tipo;
+PROCEDURE bueno ( VAR var1 : INTEGER; var2, var3 : BOOLEAN );
+VAR jj : INTEGER;
+BEGIN
+  jj := 23;
+  IF var2 THEN 
+    var1 := jj 
+  ELSIF var3 THEN
+    var1 := var2 + 1 
+  ELSE
+    var1 := 0
+  END
+END tipo;
+
+BEGIN
+        jj := jj + Write + 1 - X + y;
+        WHILE 2 < ~3 DO xx := (5 MOD 2) * tipo END;
+        bueno (jj, 2 > 3, 2 < 3);
+        bueno (3);
+        bueno (jj, 2 > 3, 2 < 3, jj);
+        malo (34);
+        Read (y);
+        Read (xx);
+        Read (23);
+        Write (23);
+        Write (xx);
+        Write (y,9);
+        WriteLn(2);
+        WriteLn;
+        X;
+        FOR Z := 4 TO 5 BY 6 DO
+          IF TODO THEN 
+            X := aa 
+          ELSE 
+            jj := + 2 & 4 
+          END
+        END
+END hola.

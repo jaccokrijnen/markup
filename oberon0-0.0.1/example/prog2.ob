@@ -1,0 +1,29 @@
+MODULE hola;
+CONST X = (2 >= + 3); Y = (1 # -4) - 3; Z = 2 + x;
+      W = W + 1;
+TYPE tipo = INTEGER;
+     maltipo = X;
+     Y = INTEGER;
+VAR xx, jj : tipo; aa: tipo;
+    i : INTEGER;
+BEGIN
+        jj := jj = 3;
+        jj := jj + 1 - X + y;
+        CASE xx OF
+         jj : jj := 3; xx := 2 |
+         4 .. X : jj := 10 
+         ELSE aa := 5
+        END;
+        WHILE 2 < ~4 DO xx := (5 MOD 2) * tipo END;
+        FOR Z := 4 TO 5 BY 6 DO
+          IF (jj = TODO) THEN X := aa ELSE jj := + 2 & 4 END
+        END;
+        FOR i := i TO 5 BY (6 + i) DO
+          xx := xx + i;
+        END;
+        CASE xx OF
+         xx : jj := 3 
+         ELSE jj := 5
+        END
+
+END chau.

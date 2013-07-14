@@ -1,0 +1,53 @@
+MODULE hola;
+CONST X = (2 >= + 3); Y = (1 # -4) - 3; Z = 2 + x;
+      W = W + 1;
+TYPE tipo = INTEGER;
+     maltipo = X;
+     Y = INTEGER;
+     matrix = ARRAY 10 OF ARRAY 5 OF INTEGER;
+     rec = RECORD f1 : INTEGER; f2 : ARRAY 3 OF INTEGER; f1 : BOOLEAN END; 
+VAR xx, jj : tipo; aa: tipo;
+    r1 : RECORD f1 : INTEGER; f2 : ARRAY 3 OF INTEGER; f1 : BOOLEAN END;
+    a1, a2 : ARRAY 5 OF INTEGER;
+    b1 : BOOLEAN;
+    m1 : matrix;
+PROCEDURE tipo ( VAR var1 : INTEGER; var2, var3 : X );
+BEGIN
+  jj := 23 + z
+END tipo;
+PROCEDURE bueno ( VAR var1 : INTEGER; var2, var3 : BOOLEAN );
+VAR jj : INTEGER;
+BEGIN
+  jj := 23;
+  IF var2 THEN 
+    var1 := jj 
+  ELSIF var3 THEN
+    var1 := var2 + 1 
+  ELSE
+    var1 := 0
+  END
+END tipo;
+
+BEGIN
+        f[0] := 1; tipo.f1 := 2;
+        jj := jj + 1 - X + y;
+        jj := r1.f1 + a1.f1 - jj[10] * r1.f3;
+        WHILE 2 < ~3 DO xx := (5 MOD 2) * tipo END;
+        bueno (jj, 2 > 3, 2 < 3);
+        bueno (r1,m1);
+        bueno (jj, 2 > 3, 2 < 3, jj);
+        malo (34);
+        X;
+        a1[2] := 4 < 5;
+        m1[1] := a2;
+        b1 := m1[0][0];
+        a1 := a2;
+        r1.f1[1] := m1[0][1];
+        FOR Z := 4 TO 5 BY 6 DO
+          IF TODO THEN 
+            X := aa 
+          ELSE 
+            jj := + 2 & 4 
+          END
+        END
+END hola.

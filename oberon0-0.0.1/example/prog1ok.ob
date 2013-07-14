@@ -1,0 +1,27 @@
+MODULE prog1;
+CONST X = 10 + 2;
+TYPE tipo = INTEGER;
+     tipo2 = tipo;
+     tipo3 = BOOLEAN;
+VAR x, y : tipo; z: tipo2;
+    b : tipo3;
+    i : INTEGER;
+BEGIN
+        x := 1;
+        y := 10;
+        z := 5;
+        i := 9 + 2;
+        WHILE x < X DO 
+          x := x + 1;
+          y := y + z 
+        END;
+        b := y >= (x * z);
+        IF b THEN 
+          x := 1 
+        ELSIF x > 10 THEN
+          x := z * 3
+        ELSE 
+          x := x + 1 
+        END;
+        b := FALSE
+END prog1.

@@ -1,0 +1,14 @@
+Implementation of the LDTA tool challenge using murder and AspectAG.
+For more information about the challenge consult its web page: http://ldta.info/tool.html
+
+To build an artifact, flags indicating the corresponding language and task have to be passed.
+Existing options are:
+ - languages: l1, l2, l3 and l4
+ - tasks:     t1, t2, t3 and t5
+
+For example, to build Artifact 5:
+
+runghc Setup.hs configure --flags="l4 t5"
+runghc Setup.hs build
+
+ 
