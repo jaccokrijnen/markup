@@ -47,6 +47,8 @@ pSpaces' = (:) <$> pAnySym " \r\n\t" <*> pSpaces
 lc2Pos :: LineCol -> Pos
 lc2Pos (LineCol l c) = Pos l (c+1)
 
+pSat :: (Char -> Bool) -> Parser Char
+pSat f = pSatisfy f (Insertion "pSat" (chr 0) 5)
       
 newtype Const f a s = C {unC :: f a}
 
@@ -77,7 +79,7 @@ compileKws kws (Grammar (start :: Ref a env) rules)
          comp (Sym TermVarid)  = (DTerm . lc2Pos) <$> pPos <*> (pVar kws)  <?> "identifier"
          comp (Sym TermConid)  = (DTerm . lc2Pos) <$> pPos <*> (pCon kws)  <?> "constructor"
          comp (Sym TermOp)     = (DTerm . lc2Pos) <$> pPos <*> pOp         <?> "operator"
-
+         comp (Sym TermSat f)  = (DTerm . lc2Pos) <$> pPos <*> pSat f      <?> "predicate"
 
 mapEnv  ::  (forall a . f a s -> g a s)  
         ->  Env f s env -> Env g s env

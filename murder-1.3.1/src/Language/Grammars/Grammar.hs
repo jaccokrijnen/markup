@@ -77,15 +77,16 @@ data TNonT
 data TAttT
 
 data Symbol a t env where
-  Term    :: String    ->  Symbol  (DTerm String)    TTerm   env
+  Term    :: String    ->        Symbol  (DTerm String)    TTerm   env
 
-  Nont    :: Ref a env ->  Symbol  a                 TNonT   env
+  Nont    :: Ref a env ->        Symbol  a                 TNonT   env
   -- attributed terminals
-  TermInt   ::             Symbol  (DTerm Int)       TAttT   env
-  TermChar  ::             Symbol  (DTerm Char)      TAttT   env
-  TermVarid ::             Symbol  (DTerm String)    TAttT   env
-  TermConid ::             Symbol  (DTerm String)    TAttT   env
-  TermOp    ::             Symbol  (DTerm String)    TAttT   env 
+  TermInt   ::                   Symbol  (DTerm Int)       TAttT   env
+  TermChar  ::                   Symbol  (DTerm Char)      TAttT   env
+  TermVarid ::                   Symbol  (DTerm String)    TAttT   env
+  TermConid ::                   Symbol  (DTerm String)    TAttT   env
+  TermOp    ::                   Symbol  (DTerm String)    TAttT   env 
+  TermSat   :: (Char -> Bool) -> Symbol  (DTerm Char)      TAttT   env
   --- TODO: the rest of EnumValToken
 
 
@@ -105,6 +106,7 @@ matchSym TermInt    TermInt              = Just Eq
 matchSym TermVarid  TermVarid            = Just Eq
 matchSym TermConid  TermConid            = Just Eq
 matchSym TermOp     TermOp               = Just Eq
+matchSym TermSat    TermSat              = Just Eq
 matchSym _          _                    = Nothing
 
 
@@ -119,7 +121,7 @@ char  =  TermChar
 var   =  TermVarid
 con   =  TermConid
 op    =  TermOp
-
+sat   =  TermSat
 
 ------------------------
 -- APPLICATIVE INTERFACE
@@ -220,7 +222,7 @@ pFoldr (c, e) p = fixPrd (none <|> more)
 
 ------------------------
 -- IDIOMS
-
+{- 
 -- | The  'Ii' is to be pronounced as @stop@
 data Ii = Ii 
 
@@ -261,7 +263,7 @@ kw = Kw
 instance  Idiomatic l env f g  => Idiomatic  l env ((Record HNil -> DTerm String) -> f) (Kw -> g) where
     idiomatic isf (Kw is) = idiomatic (isf <*> ((\x (Record HNil) -> x) <$> (tr is)))
 
-
+-}
 -------------------------------------------------------------------------------
 
 
