@@ -106,7 +106,6 @@ matchSym TermInt    TermInt              = Just Eq
 matchSym TermVarid  TermVarid            = Just Eq
 matchSym TermConid  TermConid            = Just Eq
 matchSym TermOp     TermOp               = Just Eq
-matchSym TermSat    TermSat              = Just Eq
 matchSym _          _                    = Nothing
 
 
@@ -222,7 +221,7 @@ pFoldr (c, e) p = fixPrd (none <|> more)
 
 ------------------------
 -- IDIOMS
-{- 
+
 -- | The  'Ii' is to be pronounced as @stop@
 data Ii = Ii 
 
@@ -263,7 +262,6 @@ kw = Kw
 instance  Idiomatic l env f g  => Idiomatic  l env ((Record HNil -> DTerm String) -> f) (Kw -> g) where
     idiomatic isf (Kw is) = idiomatic (isf <*> ((\x (Record HNil) -> x) <$> (tr is)))
 
--}
 -------------------------------------------------------------------------------
 
 
