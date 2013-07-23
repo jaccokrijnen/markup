@@ -70,6 +70,7 @@ isEmpty (Sym (TermChar))      _       = HasNotEmpty
 isEmpty (Sym (TermVarid))     _       = HasNotEmpty
 isEmpty (Sym (TermConid))     _       = HasNotEmpty
 isEmpty (Sym (TermOp))        _       = HasNotEmpty
+isEmpty (Sym (TermAnyOf _))   _       = HasNotEmpty
 isEmpty (Sym (Nont r))        empties = lookupEnv r empties
 isEmpty (Star pl pr)          empties = case isEmpty pl empties of
                                          HasEmpty (Pure f)  -> case isEmpty pr empties of

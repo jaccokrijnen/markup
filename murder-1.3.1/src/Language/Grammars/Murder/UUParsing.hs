@@ -47,8 +47,8 @@ pSpaces' = (:) <$> pAnySym " \r\n\t" <*> pSpaces
 lc2Pos :: LineCol -> Pos
 lc2Pos (LineCol l c) = Pos l (c+1)
 
-pSat :: (Char -> Bool) -> Parser Char
-pSat f = pSatisfy f (Insertion "pSat" (chr 0) 5)
+pSat :: [Char] -> Parser Char
+pSat = pAnySym 
       
 newtype Const f a s = C {unC :: f a}
 
@@ -67,19 +67,19 @@ compileKws kws (Grammar (start :: Ref a env) rules)
 
          comp :: forall t . Prod NF t env -> Parser t
 
-         comp (Star     x y)   = comp x <*>   comp y
-         comp (FlipStar x y)   = comp x <**>  comp y
-         comp (Pure     x)     = pure x
+         comp (Star     x y)     = comp x <*>   comp y
+         comp (FlipStar x y)     = comp x <**>  comp y
+         comp (Pure     x)       = pure x
 
-         comp (Sym (Term t))   = (DTerm . lc2Pos) <$> pPos <*> pTerm t     <?> t
-         comp (Sym (Nont n))   = unC (lookupEnv n result)
+         comp (Sym (Term t))     = (DTerm . lc2Pos) <$> pPos <*> pTerm t     <?> t
+         comp (Sym (Nont n))     = unC (lookupEnv n result)
 
-         comp (Sym TermInt)    = (DTerm . lc2Pos) <$> pPos <*> pInt        <?> "number"
-         comp (Sym TermChar)   = (DTerm . lc2Pos) <$> pPos <*> pChr        <?> "character"
-         comp (Sym TermVarid)  = (DTerm . lc2Pos) <$> pPos <*> (pVar kws)  <?> "identifier"
-         comp (Sym TermConid)  = (DTerm . lc2Pos) <$> pPos <*> (pCon kws)  <?> "constructor"
-         comp (Sym TermOp)     = (DTerm . lc2Pos) <$> pPos <*> pOp         <?> "operator"
-         comp (Sym TermSat f)  = (DTerm . lc2Pos) <$> pPos <*> pSat f      <?> "predicate"
+         comp (Sym TermInt)      = (DTerm . lc2Pos) <$> pPos <*> pInt        <?> "number"
+         comp (Sym TermChar)     = (DTerm . lc2Pos) <$> pPos <*> pChr        <?> "character"
+         comp (Sym TermVarid)    = (DTerm . lc2Pos) <$> pPos <*> (pVar kws)  <?> "identifier"
+         comp (Sym TermConid)    = (DTerm . lc2Pos) <$> pPos <*> (pCon kws)  <?> "constructor"
+         comp (Sym TermOp)       = (DTerm . lc2Pos) <$> pPos <*> pOp         <?> "operator"
+         comp (Sym (TermAnyOf x)) = (DTerm . lc2Pos) <$> pPos <*> pSat x     <?> "any of: " ++ x
 
 mapEnv  ::  (forall a . f a s -> g a s)  
         ->  Env f s env -> Env g s env

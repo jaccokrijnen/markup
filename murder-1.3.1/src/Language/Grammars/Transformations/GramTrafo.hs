@@ -67,6 +67,7 @@ mapProd _ (Sym TermChar)      = Sym TermChar
 mapProd _ (Sym TermVarid)     = Sym TermVarid 
 mapProd _ (Sym TermConid)     = Sym TermConid 
 mapProd _ (Sym TermOp)        = Sym TermOp 
+mapProd _ (Sym (TermAnyOf x)) = Sym (TermAnyOf x)
 mapProd _ (Pure x)            = Pure x
 mapProd t (Star r l)          = Star     (mapProd t r) (mapProd t l)
 mapProd t (FlipStar r l)      = FlipStar (mapProd t r) (mapProd t l)

@@ -12,20 +12,31 @@ import Control.Applicative
 -------------------------------------------
 -- GRAMMAR REPRESENTATION
 -------------------------------------------
+data
 
-data TL
-data FL a
-data NF
-
-
-data Grammar a  
+ Grammar a  
   = forall env . Grammar  (Ref a env)  
                           (FinalEnv (Productions NF) env)
 
 
-newtype Productions l a env 
-  = PS {unPS :: [Prod l a env]}
 
+type GramEnv = Env (Productions NF)
+type PreGramEnv = Env (Productions TL)
+
+
+
+------------------------
+-- Productions
+------------------------
+
+
+-- Labels for a production
+data TL   -- toplevel production
+data FL a -- fixpoint level production
+data NF   -- no fixpoint production
+
+
+-- The datatype to represent an applicative style production
 data Prod l a env where
       Star      ::  Prod l (a->b) env -> Prod l  a      env 
                 ->  Prod l b  env
@@ -36,21 +47,87 @@ data Prod l a env where
       Pure      ::  a                                      
                 ->  Prod l a  env
 
+      -- internally used for recursion in productions
       Fix       ::  Productions (FL a) a env               
                 ->  Prod TL     a  env
       Var       ::  Prod (FL a) a  env 
 
--- I tried with HOAS, but it is more restrictive
---      Fix       ::  (forall s. Prod a s -> Productions a s)  -> Prod a env 
-
-
-type GramEnv = Env (Productions NF)
-type PreGramEnv = Env (Productions TL)
 
 
 newtype PreProductions l env a 
   = PP {unPP :: [Prod l a env]}
 
+
+newtype Productions l a env 
+  = PS {unPS :: [Prod l a env]}
+
+
+
+
+--------------------------
+-- Symbols
+--------------------------
+
+
+-- Labels for a symbol
+data TTerm -- Terminal
+data TNonT -- Non terminal
+data TAttT -- Attributed terminal
+
+
+-- | Represents a symbol in a production, either a terminal or non terminal. Additional 
+--  attributed terminal symbols exist for common lexical structures.
+data Symbol a t env where
+  Term    :: String    ->        Symbol  (DTerm String)    TTerm   env
+  Nont    :: Ref a env ->        Symbol  a                 TNonT   env
+  
+  TermInt   ::                   Symbol  (DTerm Int)       TAttT   env
+  TermChar  ::                   Symbol  (DTerm Char)      TAttT   env
+  TermVarid ::                   Symbol  (DTerm String)    TAttT   env
+  TermConid ::                   Symbol  (DTerm String)    TAttT   env
+  TermOp    ::                   Symbol  (DTerm String)    TAttT   env 
+  TermAnyOf :: [Char]         -> Symbol  (DTerm Char)      TAttT   env
+
+
+-- | Gets the reference into the environment from the non terminal.  
+getRefNT :: Symbol a TNonT env -> Ref a env
+getRefNT (Nont ref) = ref
+
+
+-- | Matches two symbols
+matchSym  ::  Symbol a t1 env -> Symbol b t2 env 
+          ->  Maybe (Equal (a,t1) (b,t2))
+matchSym (Nont x)   (Nont y)             = pairEq $ match x y
+matchSym (Term x)   (Term y) | x == y    = Just Eq
+matchSym TermInt    TermInt              = Just Eq
+matchSym TermVarid  TermVarid            = Just Eq
+matchSym TermConid  TermConid            = Just Eq
+matchSym TermOp     TermOp               = Just Eq
+matchSym _          _                    = Nothing
+
+pairEq :: Maybe (Equal a b) -> Maybe (Equal (a,t) (b,t))
+pairEq (Just Eq) = Just Eq
+pairEq Nothing   = Nothing
+
+
+
+int   ::  Symbol (DTerm Int)     TAttT  env
+char  ::  Symbol (DTerm Char)    TAttT  env
+var   ::  Symbol (DTerm String)  TAttT  env
+con   ::  Symbol (DTerm String)  TAttT  env
+op    ::  Symbol (DTerm String)  TAttT  env
+
+int   =  TermInt
+char  =  TermChar
+var   =  TermVarid
+con   =  TermConid
+op    =  TermOp
+anyof =  TermAnyOf
+
+
+-------------------------
+-- DTerm
+-------------------------
 
 type Line      = Int
 type Column    = Int
@@ -72,79 +149,43 @@ data DTerm a = DTerm {pos :: Pos, value :: a}
 mkDTerm :: a -> DTerm a
 mkDTerm v = DTerm (Pos 0 0) v
 
-data TTerm
-data TNonT
-data TAttT
-
-data Symbol a t env where
-  Term    :: String    ->        Symbol  (DTerm String)    TTerm   env
-
-  Nont    :: Ref a env ->        Symbol  a                 TNonT   env
-  -- attributed terminals
-  TermInt   ::                   Symbol  (DTerm Int)       TAttT   env
-  TermChar  ::                   Symbol  (DTerm Char)      TAttT   env
-  TermVarid ::                   Symbol  (DTerm String)    TAttT   env
-  TermConid ::                   Symbol  (DTerm String)    TAttT   env
-  TermOp    ::                   Symbol  (DTerm String)    TAttT   env 
-  TermSat   :: (Char -> Bool) -> Symbol  (DTerm Char)      TAttT   env
-  --- TODO: the rest of EnumValToken
 
 
-getRefNT :: Symbol a TNonT env -> Ref a env
-getRefNT (Nont ref) = ref
 
 
-pairEq :: Maybe (Equal a b) -> Maybe (Equal (a,t) (b,t))
-pairEq (Just Eq) = Just Eq
-pairEq Nothing   = Nothing
-
-matchSym  ::  Symbol a t1 env -> Symbol b t2 env 
-          ->  Maybe (Equal (a,t1) (b,t2))
-matchSym (Nont x)   (Nont y)             = pairEq $ match x y
-matchSym (Term x)   (Term y) | x == y    = Just Eq
-matchSym TermInt    TermInt              = Just Eq
-matchSym TermVarid  TermVarid            = Just Eq
-matchSym TermConid  TermConid            = Just Eq
-matchSym TermOp     TermOp               = Just Eq
-matchSym _          _                    = Nothing
 
 
-int   ::  Symbol (DTerm Int)     TAttT  env
-char  ::  Symbol (DTerm Char)    TAttT  env
-var   ::  Symbol (DTerm String)  TAttT  env
-con   ::  Symbol (DTerm String)  TAttT  env
-op    ::  Symbol (DTerm String)  TAttT  env
-
-int   =  TermInt
-char  =  TermChar
-var   =  TermVarid
-con   =  TermConid
-op    =  TermOp
-sat   =  TermSat
-
-------------------------
--- APPLICATIVE INTERFACE
 
 
+----------------------------------------------
+-- Functor, applicative, alternative interface
+----------------------------------------------
+
+-- | Lifts a single symbol into a singleton PreProductions
 sym  ::  Symbol a  t  env -> PreProductions l env a
 sym  s = PP [ Sym $ s ]
 
+-- | Lifts a non terminal into a singleton PreProductions
 nt :: Symbol a  TNonT  env -> PreProductions l env a
 nt s = sym s
 
+ 
 ntPrd :: Symbol a  TNonT  env -> PreProductions l env a
 ntPrd s =  id <$> nt s
  
-
+-- | Lifts a string, as terminal into a singleton PreProductions
 tr ::  String -> PreProductions l env (DTerm String)
 tr s = PP [ Sym $ Term s ]
 
-
+-- | Conversion between Productions and PreProductions
 prod :: PreProductions l env a -> Productions l a env
 prod (PP ps) = PS ps
 
+-- | A PreProductions for a variable used on fixpoint level
 varPrd   ::  PreProductions (FL a) env a
 varPrd    = PP [ Var ]
+
+-- | The fixpoint of a production
 fixPrd  ::  PreProductions (FL a) env a -> PreProductions TL env a
 fixPrd p  = PP [ (Fix . prod) p ]
 

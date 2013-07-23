@@ -1,0 +1,45 @@
+data Tree
+    | Node  nvalue :: Int  
+            left   :: Tree
+            right  :: Tree
+    | Tip   tvalue :: Int
+
+deriving Tree : Show
+
+attr Tree
+    inh starts  :: {[Int]}
+    syn labeled :: Tree
+    syn ends    :: {[Int]}
+
+
+
+-- inherited
+sem Tree
+    | Node  left.starts  = tail @lhs.starts
+            right.starts = @left.ends
+
+-- synthesized
+sem Tree
+    | Node  lhs.ends     = (head @lhs.starts + 1) : @right.ends
+            lhs.labeled  = Node (head @lhs.starts) 
+                                @left.labeled 
+                                @right.labeled
+    | Tip   lhs.ends     = let (x:xs) = @lhs.starts
+                           in (x + 1) : xs
+            lhs.labeled  = Tip (head @lhs.starts)
+
+
+
+{
+testTree :: Tree
+testTree =  Node 2 
+                (Tip 3) 
+                (Node 1 
+                    (Tip 4) 
+                    (Tip 3)
+                )
+
+test :: Tree
+test = let (xs, t) = sem_Tree testTree (0:xs) in t
+}
+-- output of the program will be "6"
