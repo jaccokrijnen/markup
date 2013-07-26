@@ -78,6 +78,7 @@ mapSym _ TermVarid     = TermVarid
 mapSym _ TermConid     = TermConid 
 mapSym _ TermOp        = TermOp 
 mapSym _ (TermAnyOf x) = TermAnyOf x
+mapSym _ (TermAnyExcept x) = TermAnyExcept x
 
 remVar  :: Ref b s -> T env s -> Prod (FL b) a env -> Prod NF a s
 remVar _  t  (Sym s)             = Sym $ mapSym t s 

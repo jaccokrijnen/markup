@@ -1,0 +1,37 @@
+
+Abstract
+==============
+
+
+Introduction
+=============
+
+- problem
+- markup languages
+- extensibility
+- code fragment
+
+Context Free Grammars, Abstract syntax
+======================================
+- Definitions
+- haskell: murder, aspectag
+- (syntax) extensions: Arrows, 
+
+
+Primitive productions (tokens from scanner?) & abstract syntax datatype
+====================================
+- class of languages with own 
+
+
+Initial grammar & basic semantics
+=================================
+- markdown, latex, html
+- headings, paragraphs, lists, 
+
+
+Use cases: Table of contents & Math/Code/Syntax highlighting
+=================================
+
+
+Handling indentation & Context-sensitiveness
+============================================

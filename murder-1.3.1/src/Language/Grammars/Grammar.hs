@@ -81,12 +81,13 @@ data Symbol a t env where
   Term    :: String    ->        Symbol  (DTerm String)    TTerm   env
   Nont    :: Ref a env ->        Symbol  a                 TNonT   env
   
-  TermInt   ::                   Symbol  (DTerm Int)       TAttT   env
-  TermChar  ::                   Symbol  (DTerm Char)      TAttT   env
-  TermVarid ::                   Symbol  (DTerm String)    TAttT   env
-  TermConid ::                   Symbol  (DTerm String)    TAttT   env
-  TermOp    ::                   Symbol  (DTerm String)    TAttT   env 
-  TermAnyOf :: [Char]         -> Symbol  (DTerm Char)      TAttT   env
+  TermInt       ::               Symbol  (DTerm Int)       TAttT   env
+  TermChar      ::               Symbol  (DTerm Char)      TAttT   env
+  TermVarid     ::               Symbol  (DTerm String)    TAttT   env
+  TermConid     ::               Symbol  (DTerm String)    TAttT   env
+  TermOp        ::               Symbol  (DTerm String)    TAttT   env 
+  TermAnyOf     :: [Char] ->     Symbol  (DTerm Char)      TAttT   env
+  TermAnyExcept :: [Char] ->     Symbol  (DTerm Char)      TAttT   env
 
 
 -- | Gets the reference into the environment from the non terminal.  
@@ -97,13 +98,15 @@ getRefNT (Nont ref) = ref
 -- | Matches two symbols
 matchSym  ::  Symbol a t1 env -> Symbol b t2 env 
           ->  Maybe (Equal (a,t1) (b,t2))
-matchSym (Nont x)   (Nont y)             = pairEq $ match x y
-matchSym (Term x)   (Term y) | x == y    = Just Eq
-matchSym TermInt    TermInt              = Just Eq
-matchSym TermVarid  TermVarid            = Just Eq
-matchSym TermConid  TermConid            = Just Eq
-matchSym TermOp     TermOp               = Just Eq
-matchSym _          _                    = Nothing
+matchSym (Nont x)           (Nont y)                        = pairEq $ match x y
+matchSym (Term x)           (Term y)            | x == y    = Just Eq
+matchSym TermInt            TermInt                         = Just Eq
+matchSym TermVarid          TermVarid                       = Just Eq
+matchSym TermConid          TermConid                       = Just Eq
+matchSym TermOp             TermOp                          = Just Eq
+matchSym (TermAnyOf cs)     (TermAnyOf cs')     | cs == cs' = Just Eq
+matchSym (TermAnyExcept cs) (TermAnyExcept cs') | cs == cs' = Just Eq
+matchSym _          _                                       = Nothing
 
 pairEq :: Maybe (Equal a b) -> Maybe (Equal (a,t) (b,t))
 pairEq (Just Eq) = Just Eq
@@ -116,14 +119,15 @@ char  ::  Symbol (DTerm Char)    TAttT  env
 var   ::  Symbol (DTerm String)  TAttT  env
 con   ::  Symbol (DTerm String)  TAttT  env
 op    ::  Symbol (DTerm String)  TAttT  env
+anyof, anyexcept :: [Char] -> Symbol (DTerm Char) TAttT env
 
-int   =  TermInt
-char  =  TermChar
-var   =  TermVarid
-con   =  TermConid
-op    =  TermOp
-anyof =  TermAnyOf
-
+int       = TermInt
+char      = TermChar
+var       = TermVarid
+con       = TermConid
+op        = TermOp
+anyof     = TermAnyOf
+anyexcept = TermAnyExcept
 
 -------------------------
 -- DTerm

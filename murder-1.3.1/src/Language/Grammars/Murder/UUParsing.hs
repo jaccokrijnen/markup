@@ -47,9 +47,9 @@ pSpaces' = (:) <$> pAnySym " \r\n\t" <*> pSpaces
 lc2Pos :: LineCol -> Pos
 lc2Pos (LineCol l c) = Pos l (c+1)
 
-pSat :: [Char] -> Parser Char
-pSat = pAnySym 
-      
+pAnyExcept :: [Char] -> Parser Char
+pAnyExcept cs = pSatisfy (`notElem` cs) (Insertion "" 'a' 5)
+
 newtype Const f a s = C {unC :: f a}
 
 -- | The function 'compile' generates a parser out of a closed grammar 
@@ -79,7 +79,8 @@ compileKws kws (Grammar (start :: Ref a env) rules)
          comp (Sym TermVarid)    = (DTerm . lc2Pos) <$> pPos <*> (pVar kws)  <?> "identifier"
          comp (Sym TermConid)    = (DTerm . lc2Pos) <$> pPos <*> (pCon kws)  <?> "constructor"
          comp (Sym TermOp)       = (DTerm . lc2Pos) <$> pPos <*> pOp         <?> "operator"
-         comp (Sym (TermAnyOf x)) = (DTerm . lc2Pos) <$> pPos <*> pSat x     <?> "any of: " ++ x
+         comp (Sym (TermAnyOf x)) = (DTerm . lc2Pos) <$> pPos <*> pAnySym x     <?> "any of: " ++ x
+         comp (Sym (TermAnyExcept x)) = (DTerm . lc2Pos) <$> pPos <*> pAnyExcept x     <?> "any except: " ++ x
 
 mapEnv  ::  (forall a . f a s -> g a s)  
         ->  Env f s env -> Env g s env

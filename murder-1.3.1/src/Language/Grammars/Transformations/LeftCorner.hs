@@ -146,6 +146,11 @@ rule2F _    TermOp
 rule2F _    (TermAnyOf x)
      = proc (_, a_x) ->
         do  returnA -< PS [rule2a'F (TermAnyOf x) a_x]
+rule2F _    (TermAnyExcept x)
+     = proc (_, a_x) ->
+        do  returnA -< PS [rule2a'F (TermAnyExcept x) a_x]
+
+
 
 rule2a'F :: Symbol a t s -> Ref (a->b) s -> Prod NF b s
 rule2a'F s refA_a
