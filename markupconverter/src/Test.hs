@@ -1,31 +1,74 @@
-{-# LANGUAGE Arrows, DoRec, TemplateHaskell, EmptyDataDecls #-}
+{-# LANGUAGE Arrows, DoRec, TemplateHaskell, EmptyDataDecls, NoMonomorphismRestriction, FlexibleInstances, MultiParamTypeClasses, PostfixOperators #-}
 
 module Test (
-	module Language.Grammars.Murder.UUParsing,
-	primitives,
-	parser)
+    module Language.Grammars.Murder.UUParsing,
+    primitives,
+    parser)
 
-	where
+    where
 
 import Control.Applicative
 
+import Prelude hiding ((+), (*))
 import Language.Grammars.Grammar
 import Language.Grammars.Murder
 import Language.Grammars.Murder.Derive
 import Language.Grammars.Murder.UUParsing
 
-$(csLabels  ["cs_Root", "cs_Other"])
+import Document
 
--- | A grammar with common lexical structures for 
+$(csLabels  ["cs_Newline", "cs_Line", "cs_Header"])
+
+$(csLabels ["cs_Root"])
+
+-- | An extensible grammar with common lexical structures for markup languages
 primitives = proc () -> do
-	
-	rec 
-		root  <- addNT -< semPlus <$> sym int <* tr "+" <*> sym int
-		other <- addNT -< sym (anyof "abcd") <* tr "!"
-	exportNTs -< exportList root (export cs_Root root . export cs_Other other)
+    
+    rec 
+        newline <- addNT -< iI semNewLine ("\r"?) "\n" Ii
+        
+        -- problem, fails on empty line: "\n..."
+        line    <- addNT -< iI semLine (pMany $ sym (anyexcept "\r\n")) Ii <* nt newline 
+        
+        header  <- addNT -< iI semHeader  ("#"+) line Ii
+        
+    
+    exportNTs -< exportList header ( export cs_Header  header
+                                   . export cs_Newline newline 
+                                   . export cs_Line    line)
 
 
-semPlus (DTerm _ x) (DTerm _ y) = x + y
+
+semLine = map (\(DTerm _ x) -> x)
+
+semHeader :: [DTerm String] -> String -> Block
+semHeader hs str = Header (length hs) (Plain str)
+
+semNewLine :: Maybe (DTerm String) -> ()
+semNewLine _ = ()
+
 
 
 parser = compile (closeGram primitives)
+
+
+
+testGram = proc () -> do
+    rec 
+        root <- addNT -< length <$> pSome (tr "#") <* pMany (sym $ anyexcept "abc")
+    
+    exportNTs -< exportList root (export cs_Root root)
+
+test = compile (closeGram testGram)
+
+-- sem = iI 
+
+class Shortcuts x l a where
+    (?) :: x -> PreProductions l env (Maybe a)
+    (+) :: x -> PreProductions l env [a]
+    (*) :: x -> PreProductions l env [a]
+
+instance Shortcuts [Char] TL (DTerm String) where
+    (?) x = iI Just (tr x) Ii <|> pure Nothing
+    (+)   = pSome . tr
+    (*)   = pMany . tr

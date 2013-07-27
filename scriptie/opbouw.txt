@@ -6,32 +6,32 @@ Abstract
 Introduction
 =============
 
-- problem
-- markup languages
-- extensibility
-- code fragment
+* problem
+* markup languages
+* extensibility
+* code fragment
 
 Context Free Grammars, Abstract syntax
 ======================================
-- Definitions
-- haskell: murder, aspectag
-- (syntax) extensions: Arrows, 
+* Definitions
+* haskell: murder, aspectag
+* (syntax) extensions: Arrows, 
 
 
 Primitive productions (tokens from scanner?) & abstract syntax datatype
 ====================================
-- class of languages with own 
+* class of languages with own 
 
 
 Initial grammar & basic semantics
 =================================
-- markdown, latex, html
-- headings, paragraphs, lists, 
+* markdown, latex, html
+* headings, paragraphs, lists, 
 
 
-Use cases: Table of contents & Math/Code/Syntax highlighting
+Use cases: Table of contents & Math/Code/Syntax highlighting /custom wishes: abstract?
 =================================
 
 
-Handling indentation & Context-sensitiveness
+Handling indentation & Context*sensitiveness
 ============================================
