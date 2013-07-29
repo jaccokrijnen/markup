@@ -15,7 +15,7 @@ tested-with: GHC >= 7.4.1
 
 Flag l1
         description:  Oberon-0
-        default:      False
+        default:      True
 
 Flag l2
         description:  l1 + FOR + CASE

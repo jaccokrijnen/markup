@@ -21,13 +21,14 @@ $(csLabels  ["cs_Newline", "cs_Line", "cs_Header"])
 
 $(csLabels ["cs_Root"])
 
--- | An extensible grammar with common lexical structures for markup languages
+
+
+
 primitives = proc () -> do
     
     rec 
         newline <- addNT -< iI semNewLine ("\r"?) "\n" Ii
         
-        -- problem, fails on empty line: "\n..."
         line    <- addNT -< iI semLine (pMany $ sym (anyexcept "\r\n")) Ii <* nt newline 
         
         header  <- addNT -< iI semHeader  ("#"+) line Ii

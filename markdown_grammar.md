@@ -1,20 +1,20 @@
 # Markdown grammaticaen notes
 
-1. grammatica afgeleid van [daringfireball](http://daringfireball.net/projects/markdown/syntax)
-2. nog simpel/ambigu
+* grammatica afgeleid van [daringfireball](http://daringfireball.net/projects/markdown/syntax)
+* nu nog simpel en ambigu 
 
-probleem: markdown is niet echt een taal: elke reeks van characters is een "geldig" markdown document (=> gebruik error correctie (insertions) van uuparsinglib). 
+
+probleem: markdown is niet echt een taal: elke reeks van characters is een "geldig" markdown document => error correctie (insertions) van uuparsinglib ?
 
 ## Block level
-
-    BLOCK ::= PARS | HEADER | BLQUOTE | ...
+	MARKDOWN ::= BLOCK*
+    BLOCK    ::= PAR | HEADER | BLQUOTE | ...
 
  
 ### Paragraphs
 lines met tekst, "blank lines" om te scheiden
     
-    PARS    ::= PAR (BLINE* PAR)*
-    PAR     ::= TLINE+
+    PAR     ::= TLINE+ BLINE*
     BLINE   ::= WSPACE* NEWLINE
     TLINE   ::= (not NEWLINE)* NEWLINE
 
@@ -23,14 +23,15 @@ lines met tekst, "blank lines" om te scheiden
 setext, en atx
 
     HEADER  ::= SETEXT | ATX
-    SETEXT  ::= TLINE ('='+ | '-'+) NEWLINE\
+    SETEXT  ::= TLINE ('='+ | '-'+) NEWLINE
     ATX     ::= '#'+ TLINE
 
 
 ### Blockquotes 
-Lines kunnen beginnen met `>`, met erachter geldige markdown. Niet fijn parsen, op te lossen door `QINDENT` en `QDEDENT` tokens te genereren bij scanner.  
+Lines kunnen beginnen met `>`, met erachter geldige markdown. Niet fijn parsen, op te lossen door `BEGINQUOTE` en `ENDQUOTE` tokens te genereren bij scanner.  
 
-    BLQUOTE ::= ( MARKDOWN)+ | '>' PAR
+    BLQUOTE ::= BEGINQUOTE MARKDOWN ENDQUOTE
+
 
 > quote
 > 
@@ -40,7 +41,7 @@ Lines kunnen beginnen met `>`, met erachter geldige markdown. Niet fijn parsen, 
 
 
 
-### inline
+## Inline
 bold, italics, underline, evt html entities (&copy; &lt;)
 
     ENT ::= & (a..z)* ;`  
