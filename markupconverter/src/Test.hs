@@ -21,13 +21,14 @@ $(csLabels  ["cs_Newline", "cs_Line", "cs_Header"])
 
 $(csLabels ["cs_Root"])
 
+
+
 -- | An extensible grammar with common lexical structures for markup languages
 primitives = proc () -> do
     
     rec 
         newline <- addNT -< iI semNewLine ("\r"?) "\n" Ii
         
-        -- problem, fails on empty line: "\n..."
         line    <- addNT -< iI semLine (pMany $ sym (anyexcept "\r\n")) Ii <* nt newline 
         
         header  <- addNT -< iI semHeader  ("#"+) line Ii
@@ -41,11 +42,13 @@ primitives = proc () -> do
 
 semLine = map (\(DTerm _ x) -> x)
 
+semNewLine :: Maybe (DTerm String) -> ()
+semNewLine _ = ()
+
 semHeader :: [DTerm String] -> String -> Block
 semHeader hs str = Header (length hs) (Plain str)
 
-semNewLine :: Maybe (DTerm String) -> ()
-semNewLine _ = ()
+
 
 
 
@@ -63,6 +66,13 @@ test = compile (closeGram testGram)
 
 -- sem = iI 
 
+
+
+
+
+-- x : type for a symbol in the production
+-- l : the symbol level (toplevel/fixpointlevel/no fixpoint)
+-- a : The type of value that the symbol represents
 class Shortcuts x l a where
     (?) :: x -> PreProductions l env (Maybe a)
     (+) :: x -> PreProductions l env [a]
