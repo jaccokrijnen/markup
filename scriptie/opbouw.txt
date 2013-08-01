@@ -11,11 +11,18 @@ Introduction
 * extensibility
 * code fragment
 
+
+Big picture
+===================
+* Grammar fragments -> Document AST -> Attribute grammars
+
+
 Context Free Grammars, Abstract syntax
 ======================================
 * Definitions
 * haskell: murder, aspectag
-* (syntax) extensions: Arrows, 
+* (syntax) extensions: Arrows, idioms
+
 
 
 Primitive productions (tokens from scanner?) & abstract syntax datatype
