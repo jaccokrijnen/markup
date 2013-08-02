@@ -5,6 +5,9 @@
 
 probleem: markdown is niet echt een taal: elke reeks van characters is een "geldig" markdown document (=> gebruik error correctie (insertions) van uuparsinglib). 
 
+## Document level
+    DOC ::= BLOCK*
+
 ## Block level
 
     BLOCK ::= PARS | HEADER | BLQUOTE | ...
