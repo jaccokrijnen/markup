@@ -10,14 +10,13 @@ probleem: markdown is niet echt een taal: elke reeks van characters is een "geld
 
 ## Block level
 
-    BLOCK ::= PARS | HEADER | BLQUOTE | ...
+    BLOCK ::= PAR | HEADER | BLQUOTE | ...
 
  
 ### Paragraphs
 lines met tekst, "blank lines" om te scheiden
-    
-    PARS    ::= PAR (BLINE* PAR)*
-    PAR     ::= TLINE+
+
+    PAR     ::= TLINE+ BLINE
     BLINE   ::= WSPACE* NEWLINE
     TLINE   ::= (not NEWLINE)* NEWLINE
 
@@ -31,9 +30,9 @@ setext, en atx
 
 
 ### Blockquotes 
-Lines kunnen beginnen met `>`, met erachter geldige markdown. Niet fijn parsen, op te lossen door `QINDENT` en `QDEDENT` tokens te genereren bij scanner.  
+Lines kunnen beginnen met `>`, met erachter geldige markdown. Niet fijn parsen, op te lossen door `QSTART` en `QSTOP` tokens te genereren bij scanner.  
 
-    BLQUOTE ::= ( MARKDOWN)+ | '>' PAR
+    BLQUOTE ::= QSTART DOC QSTOP
 
 > quote
 > 

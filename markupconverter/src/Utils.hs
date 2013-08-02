@@ -15,6 +15,20 @@ import           Language.Grammars.Murder.Derive
 import           Language.Grammars.Murder.UUParsing
 import qualified Text.ParserCombinators.UU.Core as UU
 
+
+parsePretty :: (Show a) => Parser a -> String -> IO ()
+parsePretty p input = 
+    do print $ "parsing: " ++ input
+       let res = parse p input
+       case res of
+           (Ok a)         -> print a
+           (Rep a errors) -> let errors' = map (shorten 60) errors
+                             in  print a >> forM_ errors' putStrLn
+
+shorten x e | length (show e) > x = take (x-3) (show e) ++ "..."
+            | otherwise           = show e
+
+
 -----
 -- ? + * combinators
 -----

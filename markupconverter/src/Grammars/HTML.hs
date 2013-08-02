@@ -19,7 +19,7 @@ gHTML = proc () -> do
     rec 
         br        <- addNT -< tr "<br>" <|> tr "<br />"
 
-        inline    <- addNT -<  iI semPlain   (tr "placeholder") Ii
+        inline    <- addNT -<  iI semPlain   (pMany . sym . anyof $ "abc") Ii
                            <|> iI semBold    "<b>" inlines "</b>" Ii
                            <|> iI semItalics "<i>" inlines "</i>" Ii
         
@@ -46,8 +46,8 @@ pHTML = compile (closeGram gHTML)
 
 
 -- Semantics for building the AST
-semPlain :: DTerm String -> D.Inline
-semPlain = D.Plain . value
+--semPlain :: DTerm String -> D.Inline
+semPlain = D.Plain . map value
 
 semBold :: [D.Inline] -> D.Inline
 semBold = D.Bold

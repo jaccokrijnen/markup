@@ -27,13 +27,13 @@ $(csLabels  ["cs_Newline", "cs_Line", "cs_Header"])
 gMarkdown = proc () -> do
     
     rec 
-        newline <- addNT -< iI semNewLine         ("\r"?) "\n" Ii
+        newline <- addNT -< iI semNewLine         (tr "\r" <|> tr "\n") Ii
         
-        line    <- addNT -< iI semLine            (pMany . sym . anyexcept $ "<") (ign newline) Ii
+        line    <- addNT -< iI semLine            (pMany . sym . anyexcept $ "\r\n") (ign newline) Ii
         
         header  <- addNT -< iI semHeaderAtx       (pSome (tr "#")) line Ii
-                        <|> iI semHeaderSetext    line  
-                                                  (tr "=" <|> tr "-") (ign line) Ii 
+                       --  <|> iI semHeaderSetext    line  
+                       --                          (tr "=" <|> tr "-") (ign line) Ii 
         
     
     exportNTs -< exportList header ( export cs_Header  header
@@ -48,7 +48,7 @@ lineChars = ['a'..'z'] ++ ['A' .. 'Z'] ++ ['0' .. '9'] ++ " ':;!@()\""
 -- Semantics for building the AST
 semLine = map value
 
-semNewLine :: Maybe (DTerm String) -> ()
+--semNewLine :: Maybe (DTerm String) -> ()
 semNewLine _ = ()
 
 semHeaderAtx :: [DTerm String] -> String -> Block
