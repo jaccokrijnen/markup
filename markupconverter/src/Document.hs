@@ -1,12 +1,14 @@
 module Document where
 
 data Root = Root { document :: Document }
+    deriving Show
 
 data Document = Document { blocks :: [Block] }
+    deriving Show
 
-data Block = Header    { hlevel :: Int,
-                         hInlines :: [Inline] }
-           | Paragraph { pInlines :: [Inline] }
+data Block = Header    { level_head :: Int,
+                         inlines_head :: [Inline] }
+           | Paragraph { inlines_par :: [Inline] }
            deriving (Show)
 
 data Inline = Plain   { str_plainInl     :: String }

@@ -14,14 +14,21 @@ Introduction
 
 Big picture
 ===================
-* Grammar fragments -> Document AST -> Attribute grammars
+* Language description (using grammars) -> Document AST -> Semantics description (using ag's)
 
 
-Context Free Grammars, Abstract syntax
+Context Free Grammars, Abstract syntax, AG's
 ======================================
 * Definitions
-* haskell: murder, aspectag
-* (syntax) extensions: Arrows, idioms
+	* Grammars
+	* Abstract Syntax
+	* AG's
+		* aspect -> attribute(s) -> rule(s)
+* In Haskell
+	* murder
+	* aspectag
+	* used (syntax) extensions: Arrows, idioms, concept van labels (emptydatadecls)
+		* important: required extensions per step in the big picture (i.e. NoMonomorphismRestricition in AspectAG)
 
 
 
