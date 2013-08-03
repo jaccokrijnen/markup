@@ -18,7 +18,7 @@ root = Root (Document [Header 1  [Plain "A document"],
 
 -- does not compile yet
 -- result :: String
--- result = sem_ asp_shtml (Plain "test") () # shtml
+-- result = sem_Root asp_shtml root () # shtml
 
 
 
