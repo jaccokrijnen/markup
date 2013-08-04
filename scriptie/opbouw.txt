@@ -47,5 +47,10 @@ Use cases: Table of contents & Math/Code/Syntax highlighting /custom wishes: abs
 =================================
 
 
+Common errors
+============
+* Forgetting to add a (p_constr .=. rule) to the record
+
+
 Handling indentation & Context*sensitiveness
 ============================================
