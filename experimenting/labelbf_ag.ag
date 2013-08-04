@@ -42,4 +42,3 @@ testTree =  Node 2
 test :: Tree
 test = let (xs, t) = sem_Tree testTree (0:xs) in t
 }
--- output of the program will be "6"
