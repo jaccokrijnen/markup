@@ -21,8 +21,8 @@ root = Root (Document [Header 1  [Plain "A document"],
                        Paragraph [Plain "mor text."]])
 
 
-result :: String
-result = sem_Root asp_shtml root () # shtml
+semHTML :: Root -> String
+semHTML root = sem_Root asp_shtml root () # shtml
 
 
 

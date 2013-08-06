@@ -15,15 +15,28 @@ import           Language.Grammars.Murder.Derive
 import           Language.Grammars.Murder.UUParsing
 import qualified Text.ParserCombinators.UU.Core as UU
 
+import Document
 
-parsePretty :: (Show a) => Parser a -> String -> IO ()
+buildConverter :: (Root -> a) -> Parser Root -> (String -> ParseResult a)
+buildConverter sem p = parse (fmap sem p)
+
+
+result :: ParseResult a -> a
+result (Ok x) = x
+result (Rep x _) = x
+
+errors (Ok _) = []
+errors (Rep _ es) = es
+
+
+parsePretty :: (Show a) => Parser a -> String -> IO a
 parsePretty p input = 
     do print $ "parsing: " ++ input
        let res = parse p input
        case res of
-           (Ok a)         -> print a
+           (Ok a)         -> return a
            (Rep a errors) -> let errors' = map (shorten 60) errors
-                             in  print a >> forM_ errors' putStrLn
+                             in  forM_ errors' putStrLn >> putStrLn "" >> return a
 
 shorten x e | length (show e) > x = take (x-3) (show e) ++ "..."
             | otherwise           = show e
