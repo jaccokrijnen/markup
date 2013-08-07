@@ -90,16 +90,14 @@ instance Idiomatic l env f g => Idiomatic l env f (Ign (PreProductions l env a) 
 instance Idiomatic l env f g => Idiomatic l env f (Ign (Symbol a TNonT env) -> g) where
     idiomatic prods (Ign s) = idiomatic (prods <* sym s)
 
-
+instance Idiomatic l env f g => Idiomatic l env f (Ign String -> g) where
+    idiomatic prods (Ign str) = idiomatic (prods <* tr str)
 
 
 
 
 -- bit of error reporting
 class Error (e :: GHC.TypeLits.Symbol)
-
-instance Error ("Strings are already ignored by default") => Idiomatic l env f (Ign String -> g) where
-    idiomatic = undefined
 
 instance Error ("Missing a closing Ii") => Idiomatic l env x (PreProductions l a env) where
     idiomatic = undefined

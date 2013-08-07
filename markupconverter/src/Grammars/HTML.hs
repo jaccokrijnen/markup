@@ -1,4 +1,4 @@
-{-# LANGUAGE Arrows, RecursiveDo, EmptyDataDecls, TemplateHaskell, PostfixOperators #-}
+{-# LANGUAGE Arrows, RecursiveDo, EmptyDataDecls, TemplateHaskell, PostfixOperators, FlexibleContexts #-}
 
 module Grammars.HTML where
 
@@ -19,6 +19,15 @@ $(csLabels  ["cs_br", "cs_inline", "cs_inlines", "cs_paragraph", "cs_body", "cs_
 -- manyExcept :: String -> PreProductions l String env
 someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
 
+tag :: String -> PreProductions l env (a -> a)
+tag x = iI "<" x ">" Ii
+
+
+
+headerLvl body x = iI (semHeader' x) ("<h" ++ show x ++ ">") body ("</h" ++ show x ++ ">") Ii
+
+
+
 gHTML = proc () -> do
     rec 
         root      <-addNT-< iI (D.Root . D.Document) blocks Ii
@@ -27,18 +36,18 @@ gHTML = proc () -> do
         
         paragraph <-addNT-< iI semParagraph "<p>" inlines "</p>" Ii
         
-        header    <-addNT-< iI semHeader    "<h" (foldr1 (<|>) $ map tr ["1","2", "3","4","5","6"]) ">" inlines "</h" (sym $ anyof "123456") ">" Ii
-        
+        header    <-addNT-< foldr1 (<|>) $ map (headerLvl inlines) [1..6]
 
-        inlineP   <-addNT-<  iI semPlain (someExcept "<") Ii
+        -- inline (plain) and inline (tag)
+        inlineP   <-addNT-<  iI semPlain   (someExcept "<")     Ii
         inlineT   <-addNT-<  iI semBold    "<b>" inlines "</b>" Ii
                          <|> iI semItalics "<i>" inlines "</i>" Ii
         
-        inlines   <-addNT-< iI semInlinesSingle  inlineP                   Ii
-                        <|> iI semInlinesSeq    (inlineP?) inlineT inlines Ii
-                        <|> pure []
-        
-        -- text      <-addNT-< iI  Ii
+        -- Multiple inlines, pMany does not suffice, since we cannot have two
+        -- consecutive plain inlines (that would be ambiguous)
+        inlines   <-addNT-<  iI semInlinesSingle  inlineP                   Ii
+                         <|> iI semInlinesSeq    (inlineP?) inlineT inlines Ii
+                         <|> pure []
         
 
         
@@ -82,3 +91,5 @@ semBody = map value
 
 semHeader :: DTerm String -> D.InlineL -> DTerm Char -> D.Block
 semHeader level inlines _ = D.Header (read . value $ level) inlines
+
+semHeader' = D.Header
