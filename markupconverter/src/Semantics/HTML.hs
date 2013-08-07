@@ -16,13 +16,13 @@ $(attLabels ["shtml"])
 
 
 -- example doc
-root = Root (Document [Header 1  [Plain "A document"],
-                       Paragraph [Plain "this is some ", Bold [Plain "really ", Italics [Plain "important"]], Plain " text."],
-                       Paragraph [Plain "mor text."]])
+doc = Document [Header 1  [Plain "A document"],
+                Paragraph [Plain "this is some ", Bold [Plain "really ", Italics [Plain "important"]], Plain " text."],
+                Paragraph [Plain "mor text."]]
 
 
-semHTML :: Root -> String
-semHTML root = sem_Root asp_shtml root () # shtml
+semHTML :: Document -> String
+semHTML doc = sem_Document asp_shtml doc () # shtml
 
 
 
@@ -32,8 +32,7 @@ semHTML root = sem_Root asp_shtml root () # shtml
 ------------------------------------------
 
 -- The aspect is a heterogenous list of pairs of production and rule
-asp_shtml =  (p_Root         .=. root_shtml)
-         .*. (p_Document     .=. document_shtml) 
+asp_shtml =  (p_Document     .=. document_shtml) 
          .*. (p_BlockL_Nil   .=. blockLnil_shtml)
          .*. (p_BlockL_Cons  .=. blockLcons_shtml)
          .*. (p_Header       .=. header_shtml) 
@@ -50,10 +49,6 @@ asp_shtml =  (p_Root         .=. root_shtml)
 -- Rules for the attribute shtml
 --------------------------------
 
--- Root production
-root_shtml = syn shtml $
-    do doc <- at ch_document
-       return $ doc # shtml
 
 -- Document production
 document_shtml = syn shtml $

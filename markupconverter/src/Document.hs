@@ -5,9 +5,6 @@ import Language.Grammars.AspectAG
 import Language.Grammars.AspectAG.Derive
 
 
-data Root = Root { document :: Document }
-    deriving Show
-
 data Document = Document { blocks :: BlockL }
     deriving Show
 
@@ -31,4 +28,4 @@ data Inline = Plain   { str_plainInl     :: String }
 
 
 
-$(deriveAG ''Root)
+$(deriveAG ''Document)

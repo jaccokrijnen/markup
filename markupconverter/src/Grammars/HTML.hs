@@ -30,7 +30,7 @@ headerLvl body x = iI (semHeader' x) ("<h" ++ show x ++ ">") body ("</h" ++ show
 
 gHTML = proc () -> do
     rec 
-        root      <-addNT-< iI (D.Root . D.Document) blocks Ii
+        root      <-addNT-< iI D.Document blocks Ii
         
         blocks    <-addNT-< pMany $ (iI header Ii) <|> (iI paragraph Ii)
         

@@ -17,7 +17,7 @@ import qualified Text.ParserCombinators.UU.Core as UU
 
 import Document
 
-buildConverter :: (Root -> a) -> Parser Root -> (String -> ParseResult a)
+buildConverter :: (Document -> a) -> Parser Document -> (String -> ParseResult a)
 buildConverter sem p = parse (fmap sem p)
 
 
