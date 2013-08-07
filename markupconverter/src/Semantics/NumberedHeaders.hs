@@ -41,17 +41,17 @@ document_ihNum = inh ihNum (nt_Document .*. HNil) $
 -}
 
 
+
 -- BlockL productions
 
--- Thread the Int to left child, thread (updated) Int to the rest
-
-blockLcons_ihNum = chain ihNum (nt_BlockL) {- inh ihNum (nt_BlockL .*. HNil) $
+blockLcons_ihNum = chain ihNum (nt_BlockL) 
+{- blockLcons_ihNum = inh ihNum (nt_BlockL .*. HNil) $
                         do  lhs    <- at lhs
                             block  <- at ch_hd_BlockL_Cons
                             return (  ch_hd_BlockL_Cons .=. lhs # ihNum
                                   .*. ch_tl_BlockL_Cons .=. block # shNum
                                   .*. emptyRecord)
--}
+                        -}
 
 
 -- Block productions 
