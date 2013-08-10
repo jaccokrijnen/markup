@@ -60,13 +60,13 @@ document_shtml = syn shtml $
 -- Blocks productions
 blockLnil_shtml = syn shtml $ return ""
 
-{- blockLcons_shtml = syn shtml $
+blockLcons_shtml = syn shtml $
     do block  <- at ch_hd_BlockL_Cons
        blocks <- at ch_tl_BlockL_Cons
        return $ block # shtml ++ blocks # shtml
--}
 
-blockLcons_shtml = use shtml (nt_BlockL .*. HNil) (++) ""
+
+--blockLcons_shtml = use shtml (nt_BlockL .*. HNil) (++) ""
 
 -- Block productions
 header_shtml = syn shtml $

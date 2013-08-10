@@ -11,55 +11,53 @@ import Language.Grammars.AspectAG.Derive
 import Document
 
 
--- shNum: synthesized header number
--- ihNum: inherited header number
-$(attLabels ["shNum", "ihNum"])
+-- chained header number
+$(attLabels ["cHeaderNum"])
 
 
-asp_hNum = asp_ihNum .+. asp_shNum
-
-
-asp_ihNum =  (p_Document    .=. undefined) --document_ihNum)
-         .*. (p_BlockL_Cons .=. blockLcons_ihNum)
-         .*. emptyRecord
-
-asp_shNum =  (p_Paragraph   .=. paragraph_shNum)
-         .*. (p_Header      .=. header_shNum)
-         .*. emptyRecord
+semHeaderNum :: Document -> Int
+semHeaderNum doc = sem_Document asp_cHeaderNum doc (cHeaderNum .=. 1 .*. emptyRecord) # cHeaderNum
 
 
 
+asp_cHeaderNum =  (p_Document    .=. document_cHeaderNum)
+              .*. (p_BlockL_Cons .=. blockLcons_cHeaderNum)
+              .*. (p_BlockL_Nil  .=. blockLnil_cHeaderNum)
+              .*. (p_Paragraph   .=. paragraph_cHeaderNum)
+              .*. (p_Header      .=. header_cHeaderNum)
+              .*. (p_InlineL_Nil  .=. cHeaderNumRule)
+              .*. (p_InlineL_Cons .=. cHeaderNumRule)
+              .*. (p_Plain        .=. cHeaderNumRule)
+              .*. (p_Bold         .=. cHeaderNumRule) 
+              .*. (p_Italics      .=. cHeaderNumRule)
+              .*. emptyRecord
 
 
--- Document productions
+-- The general rule for the chained attribute
+cHeaderNum_NTs = nt_Document .*. nt_BlockL .*. nt_Block .*. nt_Inline .*. nt_InlineL .*. hNil
+cHeaderNumRule = chain cHeaderNum cHeaderNum_NTs
 
--- does not compile
-{-
-document_ihNum = inh ihNum (nt_Document .*. HNil) $
-                          return (ch_blocks .=. 1
-                                .*. emptyRecord)
--}
+--------------------------
+-- Document productions --
+--------------------------
+document_cHeaderNum = cHeaderNumRule {- inh cHeaderNum cHeaderNum_NTs $
+                          return (  ch_blocks .=. (1 :: Int)
+                                .*. emptyRecord) -}
 
+------------------------
+-- BlockL productions --
+------------------------
+blockLcons_cHeaderNum = cHeaderNumRule
 
+blockLnil_cHeaderNum = cHeaderNumRule
 
--- BlockL productions
+-----------------------
+-- Block productions --
+-----------------------
 
-blockLcons_ihNum = chain ihNum (nt_BlockL) 
-{- blockLcons_ihNum = inh ihNum (nt_BlockL .*. HNil) $
-                        do  lhs    <- at lhs
-                            block  <- at ch_hd_BlockL_Cons
-                            return (  ch_hd_BlockL_Cons .=. lhs # ihNum
-                                  .*. ch_tl_BlockL_Cons .=. block # shNum
-                                  .*. emptyRecord)
-                        -}
+paragraph_cHeaderNum = cHeaderNumRule
 
-
--- Block productions 
-
-paragraph_shNum = syn shNum $
-                      do lhs    <- at lhs
-                         return (lhs # ihNum)
-
-header_shNum = syn shNum $
+header_cHeaderNum = cHeaderNumRule
+{- syn cHeaderNum $
                       do lhs <- at lhs
-                         return ((lhs # ihNum) + 1)
+                         return ((lhs # cHeaderNum) + 1) -}

@@ -28,6 +28,9 @@ headerLvl body x = iI (semHeader' x) ("<h" ++ show x ++ ">") body ("</h" ++ show
 
 
 
+semHeader <$> pIets <*> pIetsAnders
+
+
 gHTML = proc () -> do
     rec 
         root      <-addNT-< iI D.Document blocks Ii

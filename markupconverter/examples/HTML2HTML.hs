@@ -16,4 +16,4 @@ example =
 	   let output = html2html input
 	   
 	   mapM_ print (errors output)
-	   writeFile "examples/output.html" (result output)
+	   writeFile "examples/output2.html" (result output)
