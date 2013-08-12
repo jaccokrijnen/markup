@@ -19,16 +19,16 @@ $(csLabels  ["cs_br", "cs_inline", "cs_inlines", "cs_paragraph", "cs_body", "cs_
 -- manyExcept :: String -> PreProductions l String env
 someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
 
-tag :: String -> PreProductions l env (a -> a)
-tag x = iI "<" x ">" Ii
 
 
+tag :: String -> Ign (PreProductions l env (a -> a))
+tag x = ign $ iI "<" x ">" Ii
 
-headerLvl body x = iI (semHeader' x) ("<h" ++ show x ++ ">") body ("</h" ++ show x ++ ">") Ii
 
-
-
-semHeader <$> pIets <*> pIetsAnders
+headerLvl :: Symbol D.InlineL TNonT env -> Int -> PreProductions l env D.Block
+headerLvl body x = let open  = tag ("h"  ++ show (x :: Int))
+                       close = tag ("/h" ++ show (x :: Int))
+                   in  iI (semHeader' x) open body close Ii
 
 
 gHTML = proc () -> do
@@ -37,14 +37,14 @@ gHTML = proc () -> do
         
         blocks    <-addNT-< pMany $ (iI header Ii) <|> (iI paragraph Ii)
         
-        paragraph <-addNT-< iI semParagraph "<p>" inlines "</p>" Ii
+        paragraph <-addNT-< iI semParagraph (tag "p") inlines (tag "/p") Ii
         
         header    <-addNT-< foldr1 (<|>) $ map (headerLvl inlines) [1..6]
 
         -- inline (plain) and inline (tag)
         inlineP   <-addNT-<  iI semPlain   (someExcept "<")     Ii
-        inlineT   <-addNT-<  iI semBold    "<b>" inlines "</b>" Ii
-                         <|> iI semItalics "<i>" inlines "</i>" Ii
+        inlineT   <-addNT-<  iI semBold    (tag "b") inlines (tag "/b") Ii
+                         <|> iI semItalics (tag "i") inlines (tag "/i") Ii
         
         -- Multiple inlines, pMany does not suffice, since we cannot have two
         -- consecutive plain inlines (that would be ambiguous)

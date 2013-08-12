@@ -57,7 +57,7 @@ blockLnil_cHeaderNum = cHeaderNumRule
 
 paragraph_cHeaderNum = cHeaderNumRule
 
-header_cHeaderNum = cHeaderNumRule
-{- syn cHeaderNum $
+header_cHeaderNum = cHeaderNumRule 
+                 {- syn cHeaderNum $
                       do lhs <- at lhs
                          return ((lhs # cHeaderNum) + 1) -}

@@ -12,8 +12,8 @@ html2html = buildConverter semHTML pHTML
 
 
 example = 
-	do input <- readFile "examples/input.html"
+	do input <- readFile "examples/inputLarge.html"
 	   let output = html2html input
 	   
 	   mapM_ print (errors output)
-	   writeFile "examples/output2.html" (result output)
+	   writeFile "examples/outputLarge.html" (result output)
