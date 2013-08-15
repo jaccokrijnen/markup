@@ -70,8 +70,8 @@ blockLcons_shtml = syn shtml $
 
 -- Block productions
 header_shtml = syn shtml $
-    do level  <- at ch_level_head
-       inls   <- at ch_inlines_head
+    do level  <- at ch_level_header
+       inls   <- at ch_inlines_header
        return $ "<h" ++ show level ++ ">" 
                  ++ inls # shtml
                  ++ "</h" ++ show level ++ ">"

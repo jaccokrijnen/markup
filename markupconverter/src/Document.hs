@@ -11,8 +11,8 @@ data Document = Document { blocks :: BlockL }
 
 type BlockL = [Block]
 
-data Block = Header    { level_head   :: Int,
-                         inlines_head :: InlineL }
+data Block = Header    { level_header   :: Int,
+                         inlines_header :: InlineL }
            | Paragraph { inlines_par  :: InlineL }
            deriving (Show)
 

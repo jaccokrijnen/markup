@@ -24,6 +24,9 @@ Context Free Grammars, Abstract syntax, AG's
 	* Abstract Syntax
 	* AG's
 		* aspect -> attribute(s) -> rule(s)
+		* correspondentie (naming) Non-terminal <=> datatype, Constructor <=> productie
+		* attributen hangen aan *Non-terminals/datatypes*, vandaar
+			x <- at lhs, of x <- at ch_level_header (in de regel voor Header productie/constructor), en vervolgens x # attr
 * In Haskell
 	* murder
 	* aspectag

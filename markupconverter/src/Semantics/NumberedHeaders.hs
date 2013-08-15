@@ -20,44 +20,28 @@ semHeaderNum doc = sem_Document asp_cHeaderNum doc (cHeaderNum .=. 1 .*. emptyRe
 
 
 
-asp_cHeaderNum =  (p_Document    .=. document_cHeaderNum)
-              .*. (p_BlockL_Cons .=. blockLcons_cHeaderNum)
-              .*. (p_BlockL_Nil  .=. blockLnil_cHeaderNum)
-              .*. (p_Paragraph   .=. paragraph_cHeaderNum)
+asp_cHeaderNum =  (p_Document    .=. cHeaderNumRule)
+              .*. (p_BlockL_Cons .=. cHeaderNumRule)
+              .*. (p_BlockL_Nil  .=. cHeaderNumRule)
+              .*. (p_Paragraph   .=. cHeaderNumRule)
               .*. (p_Header      .=. header_cHeaderNum)
-              .*. (p_InlineL_Nil  .=. cHeaderNumRule)
-              .*. (p_InlineL_Cons .=. cHeaderNumRule)
-              .*. (p_Plain        .=. cHeaderNumRule)
-              .*. (p_Bold         .=. cHeaderNumRule) 
-              .*. (p_Italics      .=. cHeaderNumRule)
+              .*. (p_InlineL_Nil  .=. emptyRule)
+              .*. (p_InlineL_Cons .=. emptyRule)
+              .*. (p_Plain        .=. emptyRule)
+              .*. (p_Bold         .=. emptyRule) 
+              .*. (p_Italics      .=. emptyRule)
               .*. emptyRecord
 
 
 -- The general rule for the chained attribute
-cHeaderNum_NTs = nt_Document .*. nt_BlockL .*. nt_Block .*. nt_Inline .*. nt_InlineL .*. hNil
+cHeaderNum_NTs = nt_Document .*. nt_BlockL .*. nt_Block .*. hNil
 cHeaderNumRule = chain cHeaderNum cHeaderNum_NTs
 
---------------------------
--- Document productions --
---------------------------
-document_cHeaderNum = cHeaderNumRule {- inh cHeaderNum cHeaderNum_NTs $
-                          return (  ch_blocks .=. (1 :: Int)
-                                .*. emptyRecord) -}
 
-------------------------
--- BlockL productions --
-------------------------
-blockLcons_cHeaderNum = cHeaderNumRule
-
-blockLnil_cHeaderNum = cHeaderNumRule
-
------------------------
--- Block productions --
------------------------
-
-paragraph_cHeaderNum = cHeaderNumRule
-
-header_cHeaderNum = cHeaderNumRule 
-                 {- syn cHeaderNum $
-                      do lhs <- at lhs
-                         return ((lhs # cHeaderNum) + 1) -}
+-- Specific rule to update the header counter (if header level is 2)
+header_cHeaderNum = syn cHeaderNum $
+                        do lhs   <- at lhs
+                           level <- at ch_level_header
+                           return (if level == 2
+                                      then (lhs # cHeaderNum) + 1
+                                      else (lhs # cHeaderNum))
