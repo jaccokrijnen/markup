@@ -15,7 +15,7 @@ import           Language.Grammars.Murder.Derive
 import           Language.Grammars.Murder.UUParsing
 import qualified Text.ParserCombinators.UU.Core as UU
 
-import Document
+import Decl.Document
 
 buildConverter :: (Document -> a) -> Parser Document -> (String -> ParseResult a)
 buildConverter sem p = parse (fmap sem p)

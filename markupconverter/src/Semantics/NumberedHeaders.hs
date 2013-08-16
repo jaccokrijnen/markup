@@ -8,7 +8,7 @@ import Data.HList.TypeCastGeneric1
 import Language.Grammars.AspectAG
 import Language.Grammars.AspectAG.Derive
 
-import Document
+import Decl.Document
 
 
 -- chained header number

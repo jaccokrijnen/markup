@@ -16,7 +16,7 @@ import Language.Grammars.Murder.UUParsing
 
 
 
-import Document
+import Decl.Document
 import Utils
 
 $(csLabels  ["cs_Newline", "cs_Line", "cs_Header"])
