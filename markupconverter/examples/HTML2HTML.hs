@@ -8,7 +8,7 @@ import Grammars.HTML
 import Semantics.HTML
 
 
-html2html = buildConverter semHTML pHTML
+html2html = buildConverter semHTMLNotExtensible pHTML
 
 
 example = 

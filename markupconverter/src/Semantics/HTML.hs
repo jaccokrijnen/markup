@@ -21,8 +21,8 @@ doc = Document [Header 1  [Plain "A document"],
                 Paragraph [Plain "mor text."]]
 
 
-semHTML :: Document -> String
-semHTML doc = sem_Document asp_shtml doc () # shtml
+semHTMLNotExtensible :: Document -> String
+semHTMLNotExtensible doc = sem_Document asp_shtml doc () # shtml
 
 
 
@@ -106,3 +106,24 @@ italics_shtml  = syn shtml $
                        return $ "<i>" 
                               ++ inls # shtml
                               ++ "</i>"
+
+
+
+
+-----------------------
+-- building the record
+
+aspDocument     = document_shtml
+aspBlockL_Nil   = blockLnil_shtml
+aspBlockL_Cons  = blockLcons_shtml
+aspHeader       = header_shtml
+aspParagraph    = paragraph_shtml
+aspInlineL_Nil  = inlineLnil_shtml
+aspInlineL_Cons = inlineLcons_shtml
+aspPlain        = plain_shtml
+aspBold         = bold_shtml
+aspItalics      = italics_shtml
+
+semHtml = mkDoc aspBlockL_Cons aspBlockL_Nil aspBold
+                aspDocument aspHeader aspInlineL_Cons aspInlineL_Nil
+                aspItalics aspParagraph aspPlain

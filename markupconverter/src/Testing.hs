@@ -1,9 +1,12 @@
 module Testing (module Utils,
-                module Document,
+                module Decl.Document,
+                module Decl.DocumentHref,
                 module Grammars.HTML,
+                module Grammars.HTMLHref,
                 module Grammars.Markdown,
                 module Semantics.HTML,
                 module Semantics.NumberedHeaders,
+                module Semantics.HTMLNumberedHeaders,
                 module HTML2HTML) where
 
 
@@ -19,5 +22,8 @@ import Semantics.NumberedHeaders
 import Semantics.HTMLNumberedHeaders
 import HTML2HTML
 
+import Language.Grammars.Murder
+import Language.Grammars.AspectAG
 
-
+-- does not compile
+-- test = closeGram (gHTML semHtml)
