@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls #-}
-module Document where
+module Decl.Document where
 
 import Language.Grammars.AspectAG
 import Language.Grammars.AspectAG.Derive
@@ -11,8 +11,8 @@ data Document = Document { blocks :: BlockL }
 
 type BlockL = [Block]
 
-data Block = Header    { level_head   :: Int,
-                         inlines_head :: InlineL }
+data Block = Header    { level_header   :: Int,
+                         inlines_header :: InlineL }
            | Paragraph { inlines_par  :: InlineL }
            deriving (Show)
 
@@ -29,3 +29,4 @@ data Inline = Plain   { str_plainInl     :: String }
 
 
 $(deriveAG ''Document)
+$(deriveLang "Doc" [''Document, ''BlockL, ''Block, ''InlineL, ''Inline])

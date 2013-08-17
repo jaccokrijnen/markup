@@ -11,10 +11,10 @@ import Language.Grammars.Murder
 import Language.Grammars.Murder.Derive
 import Language.Grammars.Murder.UUParsing
 
-import qualified Document as D
+import Decl.Document
 import Utils
 
-$(csLabels  ["cs_br", "cs_inline", "cs_inlines", "cs_paragraph", "cs_body", "cs_header"])
+$(csLabels  ["cs_root", "cs_blocks", "cs_paragraph", "cs_header", "cs_inlineP", "cs_inlineT", "cs_inlines"])
 
 -- manyExcept :: String -> PreProductions l String env
 someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
@@ -25,26 +25,26 @@ tag :: String -> Ign (PreProductions l env (a -> a))
 tag x = ign $ iI "<" x ">" Ii
 
 
-headerLvl :: Symbol D.InlineL TNonT env -> Int -> PreProductions l env D.Block
-headerLvl body x = let open  = tag ("h"  ++ show (x :: Int))
-                       close = tag ("/h" ++ show (x :: Int))
-                   in  iI (semHeader' x) open body close Ii
+headerLvl :: (Int -> InlineL -> a) -> Symbol InlineL TNonT env -> Int -> PreProductions l env a
+headerLvl pHeader body x = let open  = tag ("h"  ++ show (x :: Int))
+                               close = tag ("/h" ++ show (x :: Int))
+                           in  iI (pHeader x) open body close Ii
 
 
-gHTML = proc () -> do
+gHTML sem = proc () -> do
     rec 
-        root      <-addNT-< iI D.Document blocks Ii
+        root      <-addNT-< iI (pDocument sem) blocks Ii
         
+        
+        paragraph <-addNT-< iI (pParagraph sem) (tag "p") inlines (tag "/p") Ii
+        header    <-addNT-< foldr1 (<|>) $ 
+                                map (headerLvl (pHeader sem) inlines) [1..6]
         blocks    <-addNT-< pMany $ (iI header Ii) <|> (iI paragraph Ii)
         
-        paragraph <-addNT-< iI semParagraph (tag "p") inlines (tag "/p") Ii
-        
-        header    <-addNT-< foldr1 (<|>) $ map (headerLvl inlines) [1..6]
-
         -- inline (plain) and inline (tag)
-        inlineP   <-addNT-<  iI semPlain   (someExcept "<")     Ii
-        inlineT   <-addNT-<  iI semBold    (tag "b") inlines (tag "/b") Ii
-                         <|> iI semItalics (tag "i") inlines (tag "/i") Ii
+        inlineP   <-addNT-<  iI (pPlain   sem) (someExcept "<")     Ii
+        inlineT   <-addNT-<  iI (pBold    sem) (tag "b") inlines (tag "/b") Ii
+                         <|> iI (pItalics sem) (tag "i") inlines (tag "/i") Ii
         
         -- Multiple inlines, pMany does not suffice, since we cannot have two
         -- consecutive plain inlines (that would be ambiguous)
@@ -56,21 +56,22 @@ gHTML = proc () -> do
         
 
 
-    exportNTs -<  exportList root ( {- export cs_br     br 
-                                    .-} {- export cs_inline   inline
-                                    .-} export cs_inlines  inlines
-                                    {- . export cs_body   body
-                                    . export cs_header header
-                                    . export cs_paragraph paragraph -})
+    exportNTs -<  exportList root (   export cs_root      root
+                                    . export cs_blocks    blocks
+                                    . export cs_paragraph paragraph
+                                    . export cs_header    header
+                                    . export cs_inlineP   inlineP
+                                    . export cs_inlineT   inlineT
+                                    . export cs_inlines   inlines)
 
 
 
-pHTML = compile (closeGram gHTML)
+pHTML = compile (closeGram (gHTML undefined))
 
 
 -- Semantics for building the AST
---semPlain :: Maybe String -> D.Inline ->D.Inline
-semPlain = D.Plain
+--semPlain :: Maybe String -> Inline ->Inline
+semPlain = Plain
 
 semInlinesSingle = (: [])
 
@@ -79,20 +80,20 @@ semInlinesSeq _         t is = t:is
 
 semInlinesEmpty = id
 
-semBold :: [D.Inline] -> D.Inline
-semBold = D.Bold
+semBold :: [Inline] -> Inline
+semBold = Bold
 
-semItalics :: [D.Inline] -> D.Inline
-semItalics = D.Italics
+semItalics :: [Inline] -> Inline
+semItalics = Italics
 
 
-semParagraph :: [D.Inline] -> D.Block
-semParagraph = D.Paragraph
+semParagraph :: [Inline] -> Block
+semParagraph = Paragraph
 
 semBody :: [DTerm Char] -> String
 semBody = map value
 
-semHeader :: DTerm String -> D.InlineL -> DTerm Char -> D.Block
-semHeader level inlines _ = D.Header (read . value $ level) inlines
+semHeader :: DTerm String -> InlineL -> DTerm Char -> Block
+semHeader level inlines _ = Header (read . value $ level) inlines
 
-semHeader' = D.Header
+semHeader' = Header
