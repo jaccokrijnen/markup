@@ -1,4 +1,10 @@
-module Testing where
+module Testing (module Utils,
+                module Document,
+                module Grammars.HTML,
+                module Grammars.Markdown,
+                module Semantics.HTML,
+                module Semantics.NumberedHeaders,
+                module HTML2HTML) where
 
 
 
