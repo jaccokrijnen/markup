@@ -14,55 +14,62 @@ import Language.Grammars.Murder.UUParsing
 import Decl.Document
 import Utils
 
-$(csLabels  ["cs_root", "cs_blocks", "cs_paragraph", "cs_header", "cs_inlineP", "cs_inlineT", "cs_inlines"])
-
--- manyExcept :: String -> PreProductions l String env
-someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
+-- Generate the labels used as lookup keys in the exportlist
+$(csLabels  ["cs_root", "cs_blocks", "cs_paragraph", "cs_header", "cs_inlinePlain", "cs_inlineTag", "cs_inlines"])
 
 
 
-tag :: String -> Ign (PreProductions l env (a -> a))
-tag x = ign $ iI "<" x ">" Ii
+-- | Recognizes (but ignores) a tag, i.e. "<html>"
+tag :: String -> Ign (PreProductions l env (DTerm String))
+tag x = ign $ iI "<" (tr x) ">" Ii
 
 
-headerLvl :: (Int -> InlineL -> a) -> Symbol InlineL TNonT env -> Int -> PreProductions l env a
+-- | Recognizes a header at level x, i.e. "<hx> ... </hx>" 
+headerLvl :: (Int -> InlineL -> a)    -- ^ The semantic function 
+          -> Symbol InlineL TNonT env -- ^ The non terminal to be recognized between the tags
+          -> Int                      -- ^ The level
+          -> PreProductions l env a
 headerLvl pHeader body x = let open  = tag ("h"  ++ show (x :: Int))
                                close = tag ("/h" ++ show (x :: Int))
                            in  iI (pHeader x) open body close Ii
 
 
+
+
+
+-- | The grammar for simplified version of HTML
 gHTML sem = proc () -> do
     rec 
-        root      <-addNT-< iI (pDocument sem) blocks Ii
+        root         <-addNT-< iI (pDocument sem) blocks Ii
         
         
-        paragraph <-addNT-< iI (pParagraph sem) (tag "p") inlines (tag "/p") Ii
-        header    <-addNT-< foldr1 (<|>) $ 
-                                map (headerLvl (pHeader sem) inlines) [1..6]
-        blocks    <-addNT-< pMany $ (iI header Ii) <|> (iI paragraph Ii)
+        blocks       <-addNT-< pMany $ (iI header Ii) <|> (iI paragraph Ii)
+        paragraph    <-addNT-< iI (pParagraph sem) (tag "p") inlines (tag "/p") Ii
+        header       <-addNT-< foldr1 (<|>) $ 
+                                   map (headerLvl (pHeader sem) inlines) [1..6]
         
-        -- inline (plain) and inline (tag)
-        inlineP   <-addNT-<  iI (pPlain   sem) (someExcept "<")     Ii
-        inlineT   <-addNT-<  iI (pBold    sem) (tag "b") inlines (tag "/b") Ii
-                         <|> iI (pItalics sem) (tag "i") inlines (tag "/i") Ii
+        -- this seperation is required for the inlines non-terminal
+        inlinePlain  <-addNT-<  iI (pPlain   sem) (someExcept "<")     Ii
+        inlineTag    <-addNT-<  iI (pBold    sem) (tag "b") inlines (tag "/b") Ii
+                        <|>     iI (pItalics sem) (tag "i") inlines (tag "/i") Ii
         
         -- Multiple inlines, pMany does not suffice, since we cannot have two
         -- consecutive plain inlines (that would be ambiguous)
-        inlines   <-addNT-<  iI semInlinesSingle  inlineP                   Ii
-                         <|> iI semInlinesSeq    (inlineP?) inlineT inlines Ii
-                         <|> pure []
+        inlines      <-addNT-<  iI semInlinesSingle  inlinePlain                 Ii
+                        <|>     iI semInlinesSeq    (inlinePlain?) inlineTag inlines Ii
+                        <|>     pure []
         
 
         
 
 
-    exportNTs -<  exportList root (   export cs_root      root
-                                    . export cs_blocks    blocks
-                                    . export cs_paragraph paragraph
-                                    . export cs_header    header
-                                    . export cs_inlineP   inlineP
-                                    . export cs_inlineT   inlineT
-                                    . export cs_inlines   inlines)
+    exportNTs -<  exportList root (   export cs_root          root
+                                    . export cs_blocks        blocks
+                                    . export cs_paragraph     paragraph
+                                    . export cs_header        header
+                                    . export cs_inlinePlain   inlinePlain
+                                    . export cs_inlineTag     inlineTag
+                                    . export cs_inlines       inlines)
 
 
 

@@ -7,7 +7,8 @@ module Testing (module Utils,
                 module Semantics.HTML,
                 module Semantics.NumberedHeaders,
                 module Semantics.HTMLNumberedHeaders,
-                module HTML2HTML) where
+                module HTML2HTML,
+                module Language.Grammars.AspectAG) where
 
 
 

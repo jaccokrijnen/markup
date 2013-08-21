@@ -17,8 +17,14 @@ import qualified Text.ParserCombinators.UU.Core as UU
 
 import Decl.Document
 
+
+{- 
 buildConverter :: (Document -> a) -> Parser Document -> (String -> ParseResult a)
 buildConverter sem p = parse (fmap sem p)
+-}
+
+someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
+
 
 
 result :: ParseResult a -> a
