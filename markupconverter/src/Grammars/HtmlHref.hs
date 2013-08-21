@@ -1,18 +1,18 @@
 {-# LANGUAGE Arrows #-}
 
-module Grammars.HTMLHref where
+module Grammars.HtmlHref where
 
 import Language.Grammars.Grammar
 import Language.Grammars.Murder
 
-import Grammars.HTML
+import Grammars.Html
 import Decl.Document
 import Decl.DocumentHref
 
 import Utils
 
 
-gHTMLHref sem = proc imported -> do
+gHtmlHref sem = proc imported -> do
     let inline = getNT cs_inline imported
     
     _ <-addProds-< (inline,  

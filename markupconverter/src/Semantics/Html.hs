@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls, NoMonomorphismRestriction #-}
-module Semantics.HTML where
+module Semantics.Html where
 
 
 import Data.HList.Label4
@@ -21,8 +21,8 @@ doc = Document [Header 1  [Plain "A document"],
                 Paragraph [Plain "mor text."]]
 
 
-semHTMLNotExtensible :: Document -> String
-semHTMLNotExtensible doc = sem_Document asp_shtml doc () # shtml
+semHtmlNotExtensible :: Document -> String
+semHtmlNotExtensible doc = sem_Document asp_shtml doc () # shtml
 
 
 
