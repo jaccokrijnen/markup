@@ -15,7 +15,7 @@ import Decl.Document
 import Utils
 
 -- Generate the labels used as lookup keys in the exportlist
-$(csLabels  ["cs_root", "cs_blockL", "cs_paragraph", "cs_header", "cs_inline", "cs_inlineL"])
+$(csLabels  ["cs_document", "cs_blockL", "cs_paragraph", "cs_header", "cs_inline", "cs_inlineL"])
 
 
 -- | Recognizes a header at level x, i.e. "<hx> ... </hx>" 
@@ -34,7 +34,7 @@ headerLvl pHeader body x = let open  = "<h"  ++ show x ++ ">"
 -- | The grammar for a simplified version of Html
 gHtml sem = proc () -> do
     rec 
-        root         <-addNT-< iI (pDocument sem) blockL Ii
+        document     <-addNT-< iI (pDocument sem) blockL Ii
         
         
         blockL       <-addNT-< pFoldr (pBlockL_Cons sem, pBlockL_Nil sem) $ 
@@ -48,8 +48,7 @@ gHtml sem = proc () -> do
                         <|>     iI (pBold    sem) "<b>"     inlineL          "</b>"     Ii
                         <|>     iI (pItalics sem) "<i>"     inlineL          "</i>"     Ii
         
-        -- Multiple inlines, pMany does not suffice, since we cannot have two
-        -- consecutive plain inlines (that would be ambiguous)
+        -- Multiple inlines
         inlineL      <-addNT-<  pFoldr (pInlineL_Cons sem, pInlineL_Nil sem) $
                                     iI inline Ii
         
@@ -57,12 +56,12 @@ gHtml sem = proc () -> do
         
 
 
-    exportNTs -<  exportList root (   export cs_root          root
-                                    . export cs_blockL        blockL
-                                    . export cs_paragraph     paragraph
-                                    . export cs_header        header
-                                    . export cs_inline        inline
-                                    . export cs_inlineL       inlineL)
+    exportNTs -<  exportList document (   export cs_document      document
+                                        . export cs_blockL        blockL
+                                        . export cs_paragraph     paragraph
+                                        . export cs_header        header
+                                        . export cs_inline        inline
+                                        . export cs_inlineL       inlineL)
 
 
 

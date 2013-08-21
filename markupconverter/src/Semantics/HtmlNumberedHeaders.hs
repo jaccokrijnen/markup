@@ -1,5 +1,5 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls, NoMonomorphismRestriction #-}
-module Semantics.HTMLNumberedHeaders where
+module Semantics.HtmlNumberedHeaders where
 
 import Data.HList.Label4
 import Data.HList.TypeEqGeneric1
@@ -8,7 +8,7 @@ import Language.Grammars.AspectAG
 import Language.Grammars.AspectAG.Derive
 
 import Decl.Document
-import Semantics.HTML
+import Semantics.Html
 import Semantics.NumberedHeaders
 
 
