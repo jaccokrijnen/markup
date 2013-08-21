@@ -8,6 +8,7 @@ module Testing (module Utils,
                 module Semantics.NumberedHeaders,
                 module Semantics.HTMLNumberedHeaders,
                 module HTML2HTML,
+                module Preprocessors,
                 module Language.Grammars.AspectAG) where
 
 
@@ -21,6 +22,7 @@ import Grammars.Markdown
 import Semantics.HTML
 import Semantics.NumberedHeaders
 import Semantics.HTMLNumberedHeaders
+import Preprocessors
 import HTML2HTML
 
 import Language.Grammars.Murder
