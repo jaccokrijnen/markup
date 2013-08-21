@@ -1,6 +1,7 @@
 {-# LANGUAGE TemplateHaskell, EmptyDataDecls, NoMonomorphismRestriction #-}
 module Semantics.Html where
 
+import Control.Monad
 
 import Data.HList.Label4
 import Data.HList.TypeEqGeneric1
@@ -93,7 +94,7 @@ inlineLcons_shtml = syn shtml $
        return $ inl # shtml ++ inls # shtml
 
 
-plain_shtml = syn shtml $ at ch_str_plainInl
+plain_shtml = syn shtml $ liftM id (at ch_str_plainInl)
 
 bold_shtml  = syn shtml $ 
                     do inls <- at ch_inlines_boldInl

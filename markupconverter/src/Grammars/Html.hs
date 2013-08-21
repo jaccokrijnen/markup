@@ -19,8 +19,8 @@ $(csLabels  ["cs_document", "cs_blockL", "cs_paragraph", "cs_header", "cs_inline
 
 
 -- | Recognizes a header at level x, i.e. "<hx> ... </hx>" 
-headerLvl :: (Int -> InlineL -> a)    -- ^ The semantic function 
-          -> Symbol InlineL TNonT env -- ^ The non terminal to be recognized between the tags
+headerLvl :: (Int -> inlines -> a)    -- ^ The semantic function 
+          -> Symbol inlines TNonT env -- ^ The non terminal to be recognized between the tags
           -> Int                      -- ^ The level
           -> PreProductions l env a
 headerLvl pHeader body x = let open  = "<h"  ++ show x ++ ">"
