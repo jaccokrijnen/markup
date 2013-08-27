@@ -10,7 +10,7 @@
 \maketitle
 
 \begin{abstract}
-With the @murder@ and @aspectag@ libraries we can write extensible compilers in Haskell. In this article we will demonstrate some of their basic workings by building a small markup language converter.
+With the @murder@ and @aspectag@ libraries we can write extensible compilers in Haskell. In this article we will introduce their workings and build a small markup language converter as example.
 \end{abstract}
 
 \section{Introduction}
@@ -45,7 +45,7 @@ Here we see the initial grammar and initial semantics being extended with +>>. G
 
 % example met aanpassing?
 
-% opbouw uitleg: inleiding tot murder, aspectag en usecase
+% opbouw uitleg: inleiding tot murder, aspectag en usecase (of murder-usecase grams, aspectag usecase-sem)
 \section{Grammars and the murder library}
 
 \emph{We assume that the reader is familiar with applicative-style parsing and the basics of context-free grammars.}\\
@@ -63,28 +63,29 @@ data LTerm = Abs String LTerm | Var String | App LTerm LTerm
 $(cs_labels ["cs_term","cs_var"])
 
 gram = proc () -> do
-    rec term  <-addNT-<  iI Abs  "\\" lVar "." lTerm Ii
-                  <|>    iI Var  var Ii
-                  <|>    iI App  lterm " " lterm Ii
-        var   <-addNT-<  iI      someOf ['a'..'z'] Ii
-    exportNTs-< exportList term ( export  cs_term  term
-                                . export  cs_var   var)
+    rec  term  <-addNT-<  iI Abs  "\\" lVar "." lTerm   Ii
+                  <|>     iI Var  var                  Ii
+                  <|>     iI App  lterm " " lterm      Ii
+         var   <-addNT-<  iI    ( someOf ['a'..'z'])  Ii
+    exportNTs-< exportList term  (  export  cs_term  term
+                                 .  export  cs_var   var)
 
--- The final parser
+-- the parser
 pLambda = compile (closeGram gram)
 
 \end{code}
-The notation might look a bit unfamiliar because of the arrow syntax and the |iI ... Ii| brackets. The |iI| and |Ii| values are known as ``idiomatic brackets''. They are equivalent with applicative notation and are used because of the resemblance with common CFG notation. Still this is all still completely valid Haskell.
+The notation might look a bit unfamiliar because of the arrow syntax and the |iI ... Ii| brackets. The |iI| and |Ii| values are known as ``idiom brackets''. They are equivalent with applicative notation and are used because of the resemblance with common CFG notation. Still this is all still completely valid Haskell.
 
-But why write these grammar fragments instead of the plain old parsers? First of, this datatype is flexible since it is designed as a deeply embedded DSL using typed abstract syntax. @murder@ depends on the @TTTAS@ package to allow for transformations on this AS, while keeping the [ref]. It is flexible in the sense that it is possible for somebody else to import it, retrieve the individual productions, make modifications, define new productions, introduce new non-terminals to build an new, extended grammar. As a consequence, murder can also perform grammar analysis and optimizations such as left recursion removal and empty productions removal. 
+But why write these grammar fragments instead of the plain old parsers? In the first place, this datatype is more flexible since it is designed as a deeply embedded DSL using typed abstract syntax. @murder@ depends on the @TTTAS@ package to allow for transformations on this AS, while keeping the [ref]. It is flexible in the sense that it is possible for somebody else to import it, retrieve the individual productions, make modifications, define new productions, introduce new non-terminals to build an new, extended grammar. As a consequence, murder can also perform grammar analysis and optimizations such as left recursion removal and empty productions removal. 
 
-Secondly, @murder@ makes optimal use of the Haskell type and class system to give static guarantees about the grammar fragments. For instance, adding the same non-terminal to a grammar twice results in a compile error. Also, the composition of two grammar fragments can only happen in valid ways: productions can only refer to non-terminals that are being defined or were defined in the fragments that is being extended.  
+In the second place, @murder@ makes optimal use of the Haskell type and class system to give static guarantees about the grammar fragments. For instance, adding the same non-terminal to a grammar twice results in a compile error. Also, the composition of two grammar fragments can only happen in valid ways: productions can only refer to non-terminals that are being defined or were defined in the fragments that is being extended.  
 
 % [voorbeeld met extension? bv numerals ipv onhandige church numerals]
 
 \subsection{The PreProductions datatype}
 
-On the right hand side of |<-addNT-<| we see a value of type |PreProductions l env a| that describes the alternative productions for the non-terminal being defined. These values are very similar to applicative style parsers. |PreProductions l env| is an applicative functor, and |iI Email local "@" domain Ii| is equivalent to |Email <$> nt sym <* tr "@" <*> nt domain|. To keep things comprehensive, we will use the applicative style only in this section, and discuss the idiomatic brackets later on.
+On the right hand side of |<-addNT-<| we see a value of type |PreProductions l env a| that describes the alternative productions for the non-terminal being defined. |PreProductions l env| is an applicative functor, and |iI Email local "@" domain Ii| is equivalent to |Email <$> nt sym <* tr "@" <*> nt domain|. To keep things comprehensive, we will use the applicative style only in this section, and discuss the idiom brackets later on.
+% miss die vertaling pas na introductie combinators?
 
 There are a few primitives that can be used to construct values of type |PreProductions l env a|:
 
@@ -93,13 +94,13 @@ There are a few primitives that can be used to construct values of type |PreProd
 
 \item |nt :: Symbol a TNonT env -> PreProductions l env a| \\ refers to a non-terminal, where the argument is a value that is obtained by the pattern match on the left hand side of a |<-addNT-<|. Also, for the domain of programming languages @murder@ has some predefined symbols that can be used, such as |var| for a variable identifier, |op| for an operator symbol and |int| for an integer.
 
-\item |pManyExcept, pSomeExcept :: [Char] -> PreProductions l env a| \\ to recognize zero or more and one or more characters respectively except for the given characters.
+\item |manyOf, someOf, manyExcept, pSomeExcept :: [Char] -> PreProductions l env a| \\ to recognize zero or more and one or more characters of the given characters, or zero or more and one or more except for the given characters.
 \end{itemize}
 
 They can be combined with the following combinators:
 
 \begin{itemize}
-\item The functions of the alternative and applicative class: |<||>|, pure, |<*>| for alternatives or sequences.
+\item The functions of the alternative and applicative class: |<||>|, pure, |<*>| for alternatives or sequencing.
 
 \item |pMany, pSome :: PreProductions l env a -> PreProductions l env [a]| for recognizing zero or more and one or more productions respectively.
 
@@ -114,9 +115,9 @@ For example, we could write the following to express two alternatives for recogn
 
 \subsection{Idiomatic brackets}
 
-The idiomatic brackets [bron haskell.org] allow for syntax that matches common grammar notation. It is equivalent to writing applicative style, but looks quite magical because of the spaces between the function, terminals and non-terminals, which are indeed function application.
+The idiom brackets [bron haskell.org] allow for syntax that matches common grammar notation. It is equivalent to writing applicative style, but looks quite magical because of the spaces between the function, terminals and non-terminals, which are indeed function application.
 
-Effectively, the application of applicative happens ``under the hood'', and the following rules hold for values that are placed between |iI| and |Ii|:
+Effectively, the application of applicative and lifting of values happen ``under the hood'', and the following rules hold for values that are placed between |iI| and |Ii|:
 \begin{itemize}
 \item A function to combine all the results is automatically lifted with pure. It is optional to have such a function, otherwise |id| is used
 \item A value of type |String| is automatically lifted with |tr| and \emph{ignored} as argument for the function
@@ -125,7 +126,7 @@ Effectively, the application of applicative happens ``under the hood'', and the 
 \item values of other types are not accepted (except for some special types defined in the @murder@ library)
 \end{itemize}
 
-A well formed value between idiomatic brackets is again of type |PreProductions l env a|. Note that defining alternatives between the idiomatic brackets is not possible. If you are happy with these rules and do not care about the inner workings, you can skip the rest of this section. \\
+A well formed value between idiom brackets is again of type |PreProductions l env a|. Note that defining alternatives between the idiom brackets is not possible. If you are happy with these rules and do not care about the inner workings, you can skip the rest of this section. \\
 
 It can be mystifying how such syntax is valid Haskell. For instance, iI is a function that 1. seems to accept a variable amount of arguments (polyvariadic) of different types but is 2. somehow constrained by the type system to accept the arguments in the right order and by the right amount.
 
@@ -147,8 +148,12 @@ instance (Conc k) => Conc (String -> k) where
 \end{code}
 The two types that are instance of this class are |String| and |Conc k => String -> k|. Thus inductively defining all functions | String -> String -> ... -> String| to be instances. We can now write |conc "polyvariadic" " " "function"| . As an exercise, the reader could try to define a more general class and instance such that any type |Show a => a| can be given as argument.
 
-By using the MultiParamTypeClasses and FunctionalDependencies extensions, information about the result being constructed can be taken into account. In [bron haskell.org], an implementation is given for any applicative type constructor. The idiomatic brackets in @murder@ closely resemble this, but are specialized for certain types (as listed above).
+By using the MultiParamTypeClasses and FunctionalDependencies extensions, information about the result being constructed can be taken into account. In [bron haskell.org], an implementation is given for any applicative type constructor. The idiom brackets in @murder@ closely resemble this implementation, but are specialized for certain types (as listed above).
 
+\subsection{ExportList datatype and labels}
+On the right hand side of |exportNTs-<| a value of type |ExportList a nts env| is required. In the above example, we use the utility function |exportList| which takes the start non-terminal of the grammar, and a list of exported non-terminals. We say ``exported non-terminals'' to indicate that these non-terminals can be modified by later grammar fragments that extend this fragment. The type parameters of |ExportList| indicatie the type of the 
+
+The |export| functions takes a label and a non-terminal symbol. These labels are used as index in a heterogenous list with the non-terminals
 
 
 \subsection{Grammar fragments and Arrows}
@@ -162,8 +167,10 @@ type GramFragment a b = Grammar a -> Grammar b
 
 Then we get grammar fragment composition for free, by using function composition. The actual type is more complicated, but it is important to keep this design in mind.
 
-In reality, grammar extensions are Arrows[ref], a generalization of functions. Just like functions, they receive input and produce output and can be composed.
-Arrows are an interesting concept, but in the rest of this section we will only offer some analogies to functions, since knowledge of arrow syntax suffices to write grammar fragments. For a more formal introduction, see [...]. Take a look at the arrow equivalent of a lambda function:
+In reality, grammar extensions are Arrows[ref], a generalization of functions. Just like functions, they receive input and produce output and can be composed. The types contain information about which non-terminals the fragment exports.
+Arrows are an interesting concept, but in the rest of this section we will only offer some analogies to functions, since knowledge of arrow syntax suffices to write grammar fragments. For a more formal introduction, see [...]. 
+
+Take a look at the arrow equivalent of a lambda function:
 
 \begin{code}
 arrow0 = proc x -> do
@@ -176,8 +183,6 @@ arrow0 = proc x -> do
 
 Finally, arrow syntax supports mutually recursive declarations \footnote{for arrows that instantiate the ArrowLoop class} by using the rec keyword, analogous to a |let| with multiple declarations.
 
-
-%email voorbeeld misschien maar beter pas hier?
 
 \subsection{A note about type signatures}
 You may have noticed that we don't explicitly write the types of grammar fragments down. Type signatures are often very useful to \emph{document} a value, which is considered to be a good practice. However, for grammar fragment (and attributes as we will see later), the type system is used to \emph{express constraints} about the datatypes in question. For instance, [grammar fragment requires non-terminals to extend] . These constraints often result in large type signatures that are tedious to write down, and we rely on the type inferencer instead.
