@@ -16,6 +16,6 @@ gHtmlHref sem = proc imported -> do
     let inline = getNT cs_inline imported
     
     _ <-addProds-< (inline,  
-    				iI (pHref sem) "<a href=\"" (someExcept "\"") ">" (someExcept "<") "</a>" Ii)
+    				iI (pHref sem) "<a href=\"" (someExcept "\"") "\">" (someExcept "<") "</a>" Ii)
     
     exportNTs -< imported

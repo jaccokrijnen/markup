@@ -27,4 +27,4 @@ import Language.Grammars.Murder
 import Language.Grammars.AspectAG
 import Language.Grammars.Murder.UUParsing
 -- does not compile
-test = compile $ closeGram (gHtml undefined)
+test = compile $ closeGram (gHtml semHtml)

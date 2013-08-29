@@ -10,22 +10,22 @@ import Language.Grammars.Grammar
 import Language.Grammars.Murder
 import Language.Grammars.Murder.Derive
 import Language.Grammars.Murder.UUParsing
-
+import Language.Grammars.AspectAG
 import Decl.Document
 import Utils
 
 -- Generate the labels used as lookup keys in the exportlist
 $(csLabels  ["cs_document", "cs_blockL", "cs_paragraph", "cs_header", "cs_inline", "cs_inlineL"])
 
-
+{-
 -- | Recognizes a header at level x, i.e. "<hx> ... </hx>" 
-headerLvl :: (Int -> inlines -> a)    -- ^ The semantic function 
+headerLvl :: (int -> inlines -> a)    -- ^ The semantic function 
           -> Symbol inlines TNonT env -- ^ The non terminal to be recognized between the tags
           -> Int                      -- ^ The level
-          -> PreProductions l env a
+          -> PreProductions l env a -}
 headerLvl pHeader body x = let open  = "<h"  ++ show x ++ ">"
                                close = "</h" ++ show x ++ ">"
-                           in  iI (pHeader x) open body close Ii
+                           in  iI (pHeader (sem_Lit x)) open body close Ii
 
 
 
@@ -44,7 +44,7 @@ gHtml sem = proc () -> do
                                    map (headerLvl (pHeader sem) inlineL) [1..6]
         
         -- this seperation is required for the inlines non-terminal
-        inline       <-addNT-<  iI (pPlain   sem) "<plain>" (someExcept "<") "</plain>" Ii 
+        inline       <-addNT-<  iI (pPlain   sem . sem_Lit) "<plain>" (someExcept "<") "</plain>" Ii 
                         <|>     iI (pBold    sem) "<b>"     inlineL          "</b>"     Ii
                         <|>     iI (pItalics sem) "<i>"     inlineL          "</i>"     Ii
         
@@ -65,19 +65,4 @@ gHtml sem = proc () -> do
 
 
 
--- semantics for building the AST
-
-semAst = DocSF {
-    pBlockL_Cons  = (:),
-    pBlockL_Nil   = [],
-    pBold         = Bold,
-    pDocument     = Document,
-    pHeader       = Header,
-    pInlineL_Cons = (:),
-    pInlineL_Nil  = [],
-    pItalics      = Italics,
-    pParagraph    = Paragraph,
-    pPlain        = Plain
-}
-
-pHtml = compile (closeGram (gHtml semAst))
+pHtml = compile (closeGram (gHtml undefined))

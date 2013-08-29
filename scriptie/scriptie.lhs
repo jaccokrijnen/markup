@@ -236,10 +236,35 @@ gHtml sem = proc () -> do
 
 \section{Semantics with aspectag}
 
-Now that we can write grammar descriptions, we would like to define semantic functions
+Now that we can write grammar descriptions, we would also like to define semantic functions. In the case of our markup converter, the semantics is a string in the target markup language. We use the @aspectag@ library which is built around the notion of attribute grammars. It provides a modular mechanism with which one can define groups of attributes, called \emph{aspects}. In this section we will start by explaining the relevant terminology, then explain 
+
+\subsection{Attribute grammars and terminology}
+
+\subsubsection{Abstract syntax and trees}
+The most common way to express abstract syntax (AS) in Haskell is to define datatypes that correspond to non-terminals and dataconstructors that correspond to productions (when applied to their values). From now on, both correspondences will be used as synonyms when talking about AS.
+
+For our markup converter, we will use the following AS:
 
 
 
+This represents a very basic markup document in a general form. \\
+
+A value of type |Document| can be seen as a tree (called a parse tree when resulting from a parser). We can then call a dataconstructor a \emph{node}, and its values \emph{child nodes}. Attribute grammars [ref] are a formalism to describe computations through such a tree.
+
+\subsubsection{Attributes}
+A traditional fold over a datatype |T| requires an \emph{algebra}: a function for every constructor of |T| that combines the results of folding the children into a result value. Values can be threaded down the datatype by having a function as result of the fold: the parameters can be filled in by the parent node during the folding process.
+
+Although a fold is a very generic way of defining semantic functions, it is not very extensible. For example, there is no real way to compute another result value in the same fold other than changing all the functions of the algebra in the original source code. With @aspectag@ we can define seperate so-called attributes that that can be composed and extended.
+%sth about lack of extensibility
+
+An \emph{attribute} is very similar, it is a named value that ``exists'' at every constructor of a type |T|. Instead of ``result value''A \emph{synthesized} attribute is a value that An advantage is that we can abstract away from the evaluation details of a fold and focus on the result values.
+
+
+Fold op AS, nu-uh
+
+
+
+\subsection{aspects}
 
 
 

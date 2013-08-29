@@ -30,3 +30,19 @@ data Inline = Plain   { str_plainInl     :: String }
 
 $(deriveAG ''Document)
 $(deriveLang "Doc" [''Document, ''BlockL, ''Block, ''InlineL, ''Inline])
+
+
+-- semantics for building the AST
+
+semAst = DocSF {
+    pBlockL_Cons  = (:),
+    pBlockL_Nil   = [],
+    pBold         = Bold,
+    pDocument     = Document,
+    pHeader       = Header,
+    pInlineL_Cons = (:),
+    pInlineL_Nil  = [],
+    pItalics      = Italics,
+    pParagraph    = Paragraph,
+    pPlain        = Plain
+}
