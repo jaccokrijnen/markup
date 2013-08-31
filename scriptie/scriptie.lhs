@@ -89,18 +89,18 @@ As a start we will have a look at a basic grammar fragment defined with the @mur
 \begin{figure}[h]
 
 \begin{code}
-data LTerm = Abs String LTerm | Var String | App LTerm LTerm
+$(csLabels ["cs_term","cs_var"])
 
-$(cs_labels ["cs_term","cs_var"])
-
-gram = proc _ -> do
-    rec  lterm  <-addNT-<  iI Abs  "\\" var "." lterm    Ii
-                   <|>     iI Var  var                   Ii
-                   <|>     iI App  lterm " " lterm       Ii
+gram = proc () -> do
+    rec  lterm  <-addNT-<  iI semAbs  "\\" var "." lterm    Ii
+                   <|>     iI semVar  var                   Ii
+                   <|>     iI semApp  lterm " " lterm       Ii
          var    <-addNT-<   iI      (someOf ['a'..'z'])  Ii
     exportNTs-< exportList term  (  export  cs_term  term
                                  .  export  cs_var   var)
-
+semAbs = ...
+semVar = ...
+semApp = ...
 -- the parser
 pLambda = compile (closeGram gram)
 
@@ -240,23 +240,39 @@ arrow0 = proc x -> do
 
 
 
-\subsection{ExportList datatype and labels}
-On the right hand side of |exportNTs-<| a value of type |ExportList a nts env| is required. In the above example, we use the utility function |exportList| which takes the start nonterminal of the grammar, and a list of exported nonterminals. We say ``exported nonterminals'' to indicate that these nonterminals can be modified by later grammar fragments that extend this fragment. The type parameters of |ExportList| indicate the type of the 
+\subsection{The Export datatype and labels}
+The output of a grammar fragment is a value of type |Export a nts env|. A value of this type is expected on the right hand side of |exportNTs-<|. In the above example, we use the utility function |exportList| to construct it. It takes the start nonterminal of the grammar, and a list of exported nonterminals. This datatype is meant as a lookup table for further grammar fragments that will build upon this one. The values prefixed by @cs_@ are created by template haskell with the utility function |csLabels| and are used as keys in the lookuptable. For more detail, see [thesis].
 
-The |export| functions takes a label and a nonterminal symbol. These labels are used as index in a heterogeneous list with the nonterminals
+A fragment that extends another fragment should have such an ExportList as arrow input, the type inferencer will find this out. As an example, imagine somebody else who would like to extend the grammar (he/she does not like church encoding):
 
-TODO
+\begin{code}
+$(csLabels ["cs_bool", "cs_int", "cs_str"])
 
+gram' = proc imported -> do
+    let lterm = getNT cs_lterm imported
+    bool  <-addNT-< ...
+    int   <-addNT-< ...
+    str   <-addNT-< ...
+    _     <-addProds-< (lterm, iI semBool bool Ii <|> iI semInt int Ii <|> iI semStr str Ii)
+    exportNT-< extendExport imported   (  export cs_bool bool
+                                       .  export cs_int  int
+                                       .  export cs_str  str)
+
+semBool  = ...
+semInt   = ...
+semStr   = ...
+\end{code}
+
+Here we see the non terminal |lterm| being extended with three alternatives. Furthermore, three new non-terminals are introduced in the grammar. Note |getNT cs_lterm imported|, which gives the type system a hint that |imported| should be an |Export a nts env| containing at least the non-terminal with the label |cs_lterm|.
 
 \subsection{A note about type signatures}
-You may have noticed that we don't explicitly write the types of grammar fragments down. Type signatures are often very useful to \emph{document} a value, which is considered to be a good practice. However, for grammar fragment (and attributes as we will see later), the type system is used to \emph{express constraints} about the datatypes in question. For instance, [grammar fragment requires nonterminals to extend] . These constraints often result in large type signatures that are tedious to write down, and we rely on the type inferencer instead.
+You may have noticed that we don't explicitly write the types of grammar fragments down. Type signatures are often very useful to \emph{document} a value, which is considered to be a good practice. However, for grammar fragment (and attributes as we will see later), the type system is used to \emph{express constraints} about the datatypes in question. For instance, [grammar fragment requires nonterminals to extend] . Also, heterogeneous lists contain the types of the values in their types. These constraints and types often result in large type signatures that are tedious to write down, and we rely on the type inferencer instead.
 
 
 \section{Defining the grammar of a markup language}
-We can now start with the markup converter and write a grammar for HTML:
+We can now start with the markup converter and write a grammar for a subset of HTML. We choose to use a small preprocessor that introduces @<plain>@ and @</plain>@ tags to explicitly mark plaintext. This will result in an easier grammar (this could have also been achieved with a scanner).
 
 \begin{code}
--- Generate the labels used as lookup keys in the exportlist
 $(csLabels  ["cs_document", "cs_blockL", "cs_paragraph", "cs_header", "cs_inline", "cs_inlineL"])
 
 
@@ -271,18 +287,13 @@ gHtml sem = proc () -> do
         header       <-addNT-< foldr1 (<|>) $ 
                                    map (headerLvl (pHeader sem) inlineL) [1..6]
         
-        -- this seperation is required for the inlines nonterminal
         inline       <-addNT-<  iI (pPlain   sem) "<plain>" (someExcept "<") "</plain>" Ii 
                         <|>     iI (pBold    sem) "<b>"     inlineL          "</b>"     Ii
                         <|>     iI (pItalics sem) "<i>"     inlineL          "</i>"     Ii
         
-        -- Multiple inlines
         inlineL      <-addNT-<  pFoldr (pInlineL_Cons sem, pInlineL_Nil sem) $
                                     iI inline Ii
         
-
-        
-
 
     exportNTs -<  exportList document (   export cs_document      document
                                         . export cs_blockL        blockL
@@ -291,8 +302,30 @@ gHtml sem = proc () -> do
                                         . export cs_inline        inline
                                         . export cs_inlineL       inlineL)
 
+headerLvl pHeader body x = let open  = "<h"  ++ show x ++ ">"
+                               close = "</h" ++ show x ++ ">"
+                           in  iI (pHeader (sem_Lit x)) open body close Ii
+
 \end{code}
 
+Note that the fragment receives a record |sem| with semantic functions (which we will covered in section [] 4).
+
+\subsection{An extension}
+Someone might want to extend the grammar to recognize hyperlinks, and would then write:
+
+\begin{code}
+gHtmlHref sem = proc imported -> do
+    let inline = getNT cs_inline imported
+    
+    _ <-addProds-< (inline,  
+            iI (pHref sem) "<a href=\"" (someExcept "\"") "\">" (someExcept "<") "</a>" Ii)
+    
+    exportNTs -< imported
+\end{code}
+
+\subsection{Error correction}
+
+TODO
 
 %% GRAMMAR EXTENSIONS
 %%
@@ -389,11 +422,13 @@ Just like @murder@ can derive the parsers from grammar fragment, @aspectag@ can 
 
 
 \subsection{Rules}
-We will now show how to write the same semantics with @aspectag@, and explain the types and syntax.
+We will now show how to express the same semantics with @aspectag@, and explain the types and syntax.
 
+
+% language extensions?
 \begin{code}
 $(deriveAG ''Document)
-$(deriveLang "Doc" [''Document, ''BlockL, ''Block, ''InlineL, ''Inline])
+$(attLabels ["shtml"])
 
 inlineLnil_shtml   = syn shtml $ return ""
 inlineLcons_shtml  = syn shtml $
@@ -412,6 +447,8 @@ italics_shtml      = syn shtml $
     do  inls <- at ch_inlines_italInl
         return $ "<i>" ++ inls # shtml ++ "</i>"
 \end{code}
+
+The first line of template haskell creates a lot of boilerplate code. For example, for every field of the dataconstructors, a label is created. 
 
 Fold op AS, nu-uh
 
