@@ -114,7 +114,7 @@ The notation might look a bit unfamiliar because of the use of Template Haskell 
 But why write these grammar fragments instead of the plain old parsers? In the first place, the datatypes are more flexible in the sense that it is possible for somebody else to write another fragment that builds on the initial one. It is then possible to retrieve the original productions, make modifications, define new productions, introduce new non-terminals to build an new, extended grammar fragment. As a consequence, @murder@ provides utility functions to perform grammar analysis and optimizations such as left recursion removal and empty productions removal. 
 % hier een voorbeeld van uitbreiding op de grammar
 
-In the second place, @murder@ makes optimal use of the Haskell type and class system to give static guarantees about the grammar fragments. For instance, adding the same non-terminal to a grammar twice results in a compile error. Also, the composition of two grammar fragments can only happen in valid ways: productions can only refer to non-terminals that are being defined or were defined in the fragment that is being extended (again, this constraint is enforced by the type system).  
+In the second place, @murder@ makes optimal use of the Haskell type and class system to give static guarantees about the grammar fragments. For instance, adding the same non-terminal to a grammar twice results in a compile error. Also, a grammar fragment can only be composed with another fragment that builds upon the first fragment: productions in the new fragment can only refer to non-terminals that are being defined or were defined in the fragment that is being extended (again, this constraint is enforced by the type system).
 
 % [voorbeeld met extension? bv numerals ipv onhandige church numerals]
 
@@ -145,7 +145,7 @@ They can be combined with the following combinators:
 
 \item |pFoldr :: (a -> b -> b, b) -> PreProductions l env a -> PreProductions l env b| which recogizes zero or more occurences and folds them similar to |foldr|.
 
-\item |pMaybe :: (a -> b, b) -> PreProductions l env a -> PreProductions l env b| which recognizes zero or one occurences and folds them similar to |fromMaybe|.
+\item |pMaybe :: (a -> b, b) -> PreProductions l env a -> PreProductions l env b| which recognizes zero or one occurences and folds them similar to |maybe|.
 \end{itemize}
 
 n.b. The types of the last three bullets are a bit simplified in the first two type parameters of |PreProductions|, since these are mainly for internal use in the library.
@@ -337,10 +337,54 @@ This represents a very basic markup document in a general form. The explicit typ
 
 A value of type |Document| can be seen as a tree (or a parse tree when resulting from a parser). We can then call a dataconstructor a \emph{node}, and its values \emph{child nodes}. Attribute grammars [ref] are a formalism to describe computations through such a tree.
 
-\subsubsection{Attributes}
-A traditional fold over a datatype |T| requires an \emph{algebra}: a function for every constructor of |T| that combines the results of recursively folding its children into a result value. Values can be threaded down the datatype by having a function as result of the fold: the parameters can be filled in by the parent node during the folding process.
 
-Although a fold is a very generic way of defining semantic functions, it is not very extensible. For example, there is no real way to compute another result value in the same fold other than changing all the algebra functions in the original source code. With @aspectag@ we can define seperate so-called attributes that can be composed and extended of which we can ultimately generate the semantic functions.
+
+\subsubsection{Attributes}
+A fold over the abstract syntax requires for every datatype |T| an \emph{algebra}: a function for every constructor of |T| that combines the results of recursively folding its children into a result value. These functions are known as semantic functions. Extra values can be threaded down the datatype by having a function as result of the fold: the parameters are filled in by the parent node during the folding process.
+
+In the folding process, when inspecting such a semantic function in the, we can recognize two different kind of values:
+
+\begin{enumerate}
+\item{The result value of the function that will be used by the parent node in the folding process. Examples of such values for compilers are: the output in the target language (code generation), a list of errors from the typechecker, a symbol table being constructed.}
+\item{values that are passed down from the parent node as argument of the result function. In compilers, such values might include the completed symbol table (for typechecking/name analysis).}
+\end{enumerate}
+
+From now on, we will call the first kind \emph{synthesized attributes} and the second one \emph{inherited attributes}. \\
+
+In our markup converter, it looks like we only need a synthesized attribute for a |String| in the target markup language. For example, we could have specified Html semantics for the Inlines type as following:
+
+\begin{figure}[h]
+\begin{code}
+data InlinesAlgebra inls inl = InlinesAlgebra {
+   pInlineCons  :: inl -> inls -> inls
+   pInlineNil   :: inls
+
+   pPlain       :: String  -> inl
+   pBold        :: inls    -> inl
+   pItalics     :: inls    -> inl
+}
+
+fold :: InlinesAlgebra inls inl -> Inlines -> inls
+fold = ...
+
+htmlSem :: InlinesAlgebra String String
+htmlSem = InlinesAlgebra {
+    pInlinesCons  inl inls  =  inl ++ inls
+    pInlineNil              =  ""
+
+    pPlain        str       = str
+    pBold         inls      = "<b>" ++ inls ++ "</b>"
+    pItalics      inls      = "<i>" ++ inls ++ "</i>"
+    }
+
+\end{code}
+\caption{Html semantics for Inlines}
+\end{figure}
+Thus the semantic functions are stored in a record (we have seen the use of such a record in the grammar fragment [ref]).
+
+However, such an algebra is not very extensible. For example, there is no real way to compute another synthesized attribute or thread down an extra inherited attribute in the same fold other than changing all the algebra functions in the original source code. @aspectag@ introduces an EDSL in which we can define \emph{rules} for computing an attribute which is extensible. We can ultimately generate the semantic functions.
+
+
 
 An \emph{attribute} is very similar, it is a named value that ``exists'' at every constructor of a type |T|. We distinguish two different types of attributes, \emph{synthesized} and \emph{inherited}. Synthesized and inherited attributes correspond to ``result value'' and ``threaded values'' for a fold respectively. 
 
