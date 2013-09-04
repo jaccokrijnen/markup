@@ -13,15 +13,11 @@ import           Language.Grammars.Grammar
 import           Language.Grammars.Murder
 import           Language.Grammars.Murder.Derive
 import           Language.Grammars.Murder.UUParsing
+import           Language.Grammars.AspectAG
 import qualified Text.ParserCombinators.UU.Core as UU
 
 import Decl.Document
 
-
-{- 
-buildConverter :: (Document -> a) -> Parser Document -> (String -> ParseResult a)
-buildConverter sem p = parse (fmap sem p)
--}
 
 someExcept cs = pSome $ iI value (sym $ anyexcept cs) Ii
 

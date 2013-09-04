@@ -2,6 +2,8 @@ module Preprocessors (preprocessHtml) where
 
 import Data.Char
 
+
+-- html
 preprocessHtml :: String -> String
 preprocessHtml ""                 = ""
 preprocessHtml ('>':xs) 

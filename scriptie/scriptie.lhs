@@ -50,14 +50,18 @@ Markup languages are diverse and have different purposes, such as blogs, publica
 \item{a way of describing the parser for language X. For this we use grammar fragments from the @murder@ library.}
 \item{a way of describing the semantics of language Y. For this we we use aspects from the @aspectag@ library.}
 \end{itemize}
+Both libraries are developed and extensively explained in \cite{Marcos}. This tutorial will serve as an introduction to the usage of the libraries.
+
 We want these two parts to be completely decoupled, so that we can write:
 
 \begin{code}
 import Grammars.Latex
 import Semantics.Html
 
-latex2html :: String -> (String, [Message])
-latex2html = buildConverter (gramLatex semHtml)
+latex2html :: String -> String
+latex2html input =  let  parser  = compile $ closeGram (gramLatex semHtml)
+                          x       = result (parse parser input)
+                     in  (x emptyRecord) # output
 \end{code}
 Thus we require the grammar fragment to accept the semantics as an argument.\\
 
@@ -68,13 +72,13 @@ More important, we would like this tool to be highly extensible, so other develo
 gramLatexUrls sem  = ...
 semHtmlUrls        = ...
 
-latex2html' = buildConverter  (gramLatex semHtml +>> gramLatexUrls semHtmlUrls) 
+latex2html' :: String -> String
+latex2html' input =  let  parser  = compile $ closeGram (gramLatex semHtml +>> gramLatexUrls semHtmlUrls)
+                         x       = result (parse parser input)
+                    in  (x emptyRecord) # output
 \end{code}
-Here we see the initial grammar and semantics being extended with |+>>|. Grammar fragments will be explained in section [], aspects will be covered in section []. 
+Here we see the initial grammar and semantics being extended with |+>>|. Grammar fragments will be explained in section 2, we will use that knowledge to demonstrate a grammar fragment in section 3, aspects will be covered in section 4.
 
-% example met aanpassing?
-
-% opbouw uitleg: inleiding tot murder, aspectag en use case (of murder-use case grams, aspectag use case-sem)
 \section{Grammars and the murder library}
 
 \emph{We assume that the reader is familiar with applicative-style parsing and the basics of context-free grammars.}\\
@@ -112,12 +116,8 @@ pLambda = compile (closeGram gram)
 The notation might look a bit unfamiliar because of the use of Template Haskell (line 2), arrow syntax (lines 3-9) and the |iI ... Ii| brackets. The |iI| and |Ii| values are known as ``idiom brackets''. They are equivalent with applicative notation and are used because of the resemblance with common CFG notation. Still this is all completely valid Haskell \footnote{using the GHC extensions: Arrows, RecursiveDo, EmptyDataDecls, TemplateHaskell}. The main focus of this section is to make the reader familiar with these concepts and relevant notation. \\
 
 But why write these grammar fragments instead of the plain old parsers? In the first place, the datatypes are more flexible in the sense that it is possible for somebody else to write another fragment that builds on the initial one. It is then possible to retrieve the original productions, make modifications, define new productions, introduce new nonterminals to build an new, extended grammar fragment. As a consequence, @murder@ provides utility functions to perform grammar analysis and optimizations such as left recursion removal and empty productions removal. 
-% hier een voorbeeld van uitbreiding op de grammar
 
 In the second place, @murder@ makes optimal use of the Haskell type and class system to give static guarantees about the grammar fragments. For instance, adding the same nonterminal to a grammar twice results in a compile error. Also, a grammar fragment can only be composed with another fragment that builds upon the first fragment: productions in the new fragment can only refer to nonterminals that are being defined or were defined in the fragment that is being extended (again, this constraint is enforced by the type system).
-
-% [voorbeeld met extension? bv numerals ipv onhandige church numerals]
-
 
 
 \subsection{The PreProductions datatype}
@@ -157,7 +157,7 @@ In short, we can write productions just as we write parser combinators.
 
 \subsection{Idiom brackets}
 
-The idiom brackets [bron haskell.org] allow for syntax that matches common grammar notation. It is equivalent to writing applicative style, but looks quite magical because of the spaces between the function, terminals and nonterminals, which are indeed function application.
+The idiom brackets allow for syntax that matches common grammar notation. It is equivalent to writing applicative style, but looks quite magical because of the spaces between the function, terminals and nonterminals, which are indeed function application.
 
 Effectively, the application of applicative and lifting of values happen ``under the hood'', and the following rules hold for values that are placed between |iI| and |Ii|:
 \begin{itemize}
@@ -192,7 +192,7 @@ instance (Conc k) => Conc (String -> k) where
 \end{code}
 The two types that are instance of this class are |String| and |Conc k => String -> k|. Thus inductively defining all functions | String -> String -> ... -> String| to be instances. We can now write |conc "a" "b" "c" :: String| . As an exercise, the reader could try to define a more general class and instance such that any type |Show a => a| can be given as argument.
 
-By using the MultiParamTypeClasses and FunctionalDependencies extensions, information about the result being constructed can be taken into account. In [bron haskell.org], an implementation is given for any applicative type constructor. The idiom brackets in @murder@ closely resemble this implementation, but are specialized for certain types (as listed above).
+By using the MultiParamTypeClasses and FunctionalDependencies extensions, information about the result being constructed can be taken into account. An implementation for any applicative functor can be found at @http://www.haskell.org/haskellwiki/Idiom_brackets@. The idiom brackets in @murder@ closely resemble this implementation, but are specialized for certain types (as listed above).
 
 
 
@@ -212,13 +212,13 @@ type GramFragment a b = Grammar a -> Grammar b
 
 Then we get grammar fragment composition for free, by using function composition. The actual type is more complicated, but it is important to keep this design in mind. \\
 
-In reality, a grammar fragment is an arrow[ref]. To be more precise, it is the |Trafo m t s a b| arrow from the @TTTAS@ library [ref]. Arrows are a generalization of functions; just like functions, they receive input, compute output and can be composed. But arrows often carry some extra information or context for the computation. For instance, the |Trafo| arrow is designed to build a heterogeneous list in the background. A heterogeneous list contains values of different types and could be implemented as a nested tuple. To learn more about heterogeneous collections, see the @HList@ library [...].  \\
+In reality, a grammar fragment is an arrow \cite{Arrows}. To be more precise, it is the |Trafo m t s a b| arrow from the @TTTAS@ library \cite{TTTAS}. Arrows are a generalization of functions; just like functions, they receive input, compute output and can be composed. But arrows often carry some extra information or context for the computation. For instance, the |Trafo| arrow is designed to build a heterogeneous list in the background. A heterogeneous list contains values of different types and could be implemented as a nested tuple. To learn more about heterogeneous collections, see the @HList@ library \cite{HList}.  \\
 
 For grammar fragments, this implicit heterogeneous list contains value of |PreProductions l env a|. Note that these values are indeed of different types, since the parameter |a| depends on what is being parsed. By using |addNT| we extend the list, and obtain a value (the left hand side of |<-addNT-<|) that can be used to point into the list at the added productions. \\
 
 But since this heterogeneous list is constructed implicitly, what are the actual input and output types of a grammar fragment? This will be discussed in the next section.
 
-Arrows are an interesting concept, but in the rest of this section we will only offer some analogies to functions, since knowledge of arrow syntax suffices to write grammar fragments. For a more formal introduction, see [...]. To use arrow syntax, the language extension Arrows is required.
+Arrows are an interesting concept, but in the rest of this section we will only offer some analogies to functions, since knowledge of arrow syntax suffices to write grammar fragments. For a more formal introduction, see \cite{ArrowNotation}. To use arrow syntax, the language extension Arrows is required.
 
 Take a look at the arrow equivalent of a lambda function (the code is completely meaningless and only intended to demonstrate the syntax):
 
@@ -253,7 +253,7 @@ gram' = proc imported -> do
     bool  <-addNT-< ...
     int   <-addNT-< ...
     str   <-addNT-< ...
-    _     <-addProds-< (lterm, iI semBool bool Ii <|> iI semInt int Ii <|> iI semStr str Ii)
+    addProds-< (lterm, iI semBool bool Ii <|> iI semInt int Ii <|> iI semStr str Ii)
     exportNT-< extendExport imported   (  export cs_bool bool
                                        .  export cs_int  int
                                        .  export cs_str  str)
@@ -266,7 +266,7 @@ semStr   = ...
 Here we see the non terminal |lterm| being extended with three alternatives. Furthermore, three new non-terminals are introduced in the grammar. Note |getNT cs_lterm imported|, which gives the type system a hint that |imported| should be an |Export a nts env| containing at least the non-terminal with the label |cs_lterm|.
 
 \subsection{A note about type signatures}
-You may have noticed that we don't explicitly write the types of grammar fragments down. Type signatures are often very useful to \emph{document} a value, which is considered to be a good practice. However, for grammar fragment (and attributes as we will see later), the type system is used to \emph{express constraints} about the datatypes in question. For instance, [grammar fragment requires nonterminals to extend] . Also, heterogeneous lists contain the types of the values in their types. These constraints and types often result in large type signatures that are tedious to write down, and we rely on the type inferencer instead.
+You may have noticed that we don't explicitly write the types of grammar fragments down. Type signatures are often very useful to \emph{document} a value, which is considered to be a good practice. However, for grammar fragment (and attributes as we will see later), the type system is used to \emph{express constraints} about the datatypes in question. Also, heterogeneous lists contain the types of the values in their types. These constraints and types often result in large type signatures that are tedious to write down, and we rely on the type inferencer instead.
 
 
 \section{Defining the grammar of a markup language}
@@ -302,16 +302,16 @@ gHtml sem = proc () -> do
                                         . export cs_inline        inline
                                         . export cs_inlineL       inlineL)
 
-headerLvl pHeader body x = let open  = "<h"  ++ show x ++ ">"
-                               close = "</h" ++ show x ++ ">"
-                           in  iI (pHeader (sem_Lit x)) open body close Ii
+where headerLvl pHeader body x =  let  open  = "<h"   ++ show x ++ ">"
+                                       close = "</h"  ++ show x ++ ">"
+                                  in   iI (pHeader (sem_Lit x)) open body close Ii
 
 \end{code}
 
-Note that the fragment receives a record |sem| with semantic functions (which we will covered in section [] 4).
+Note that the fragment receives a record |sem| with semantic functions (which we will covered in section 4).
 
 \subsection{An extension}
-Someone might want to extend the grammar to recognize hyperlinks, and would then write:
+Someone might want to extend the grammar to recognize html hyperlinks, and could then write:
 
 \begin{code}
 gHtmlHref sem = proc imported -> do
@@ -323,9 +323,38 @@ gHtmlHref sem = proc imported -> do
     exportNTs -< imported
 \end{code}
 
+Again, this fragment receives a record (a different one, containing only this single semantic function).
+
 \subsection{Error correction}
 
-TODO
+Markup languages like markdown pose a problem: any document is considered to be ``valid'' markdown, since there exists no formal specification. Html documents suffer a similar problem: browsers accept any html document, whether it is correct or not. Can we adapt the markup converter tool to also be this flexible? When using @uu-parsinglib@ as parser backend, we get this functionality for free, since the parsers perform error correction \cite{ErrorParsers}: when a parse is not possible (an expected terminal might be inserted, or tokens from the input might be deleted). This means that whether the document does not completely adhere to our grammar, the parser will correct mistakes and continue parsing.\\
+
+For example, consider a markup converter that converts from html to html:
+
+\begin{code}
+import Grammars.Html
+import Semantics.Html
+
+html2html = buildConverter (gramHtml semHtml)
+
+\end{code}
+
+Then the following input:
+
+\begin{verbatim}
+<p><b>this is bold? <i>or italics!</i></p>
+This text should be between p tags
+<h1>is this h1 or h6?</h6>
+\end{verbatim}
+
+
+results in:
+\begin{verbatim}
+<p><b>this is bold? <i>or italics!</i></b></p>
+<p>This text should be between p tags</p>
+<h1>is this h1 or h6?</h1><h6></h6>
+\end{verbatim}
+
 
 %% GRAMMAR EXTENSIONS
 %%
@@ -413,6 +442,8 @@ htmlSem = InlinesAlgebra {
 \end{code}
 \caption{Html semantics for Inlines}
 \end{figure}
+\emph{(in all of the following examples, we will only work with the |InlineL| and |Inline| types, instead of the complete Document type, please see the package for the complete code)}\\
+
 Thus the semantic functions are stored in a record (we have seen the use of such a record in the grammar fragment [ref]). \\
 
 However, an algebra like |htmlSem| is not very extensible. For example, there is no real way to compute another synthesized attribute or thread down an inherited attribute in the same fold other than changing all the semantic functions in the original source code. @aspectag@ introduces an EDSL that solves this problem. With it we define \emph{rules} for computing an attribute at a dataconstructor (production). Similar to a semantic function, we have access to the synthesized attributes of the children and the inherited attributes of the parent. The big difference is that rules are extensible. \\
@@ -448,15 +479,55 @@ italics_shtml      = syn shtml $
         return $ "<i>" ++ inls # shtml ++ "</i>"
 \end{code}
 
-The first line of template haskell creates a lot of boilerplate code. For example, for every field of the dataconstructors, a label is created. 
+The first line of template haskell creates a lot of boilerplate code. For example, for every field of the dataconstructors, a label is created. We define rules for the |shtml| attribute (synthesized html) by using the |syn| function. |syn| takes the name (a label) of the attribute that we are defining and a value of the Reader monad. In it, we can access the child nodes with |child <- at ch_label|, then we can access their attributes with |child # attribute|. \\
 
-Fold op AS, nu-uh
+We can now generate the record of semantic functions with:
+
+\begin{code}
+$(deriveLang "Inl" [InlineL, ''Inline])
+
+aspInlineL_Nil  = inlineLnil_output
+aspInlineL_Cons = inlineLcons_output
+aspPlain        = plain_output
+aspBold         = bold_output
+aspItalics      = italics_output
+
+semHtml = mkInl aspBold aspInlineL_Cons aspInlineL_Nil aspItalics aspParagraph aspPlain
+\end{code}
+
+|deriveLang| generates the type of the semantic record, and the function mkInl, which maps all the rules onto such a semantic function.
+
+\subsection{Extending the semantics}
+We were able to extend a grammar with extra productions (for example to recognize hyperlinks). We would now also like to do the same for the semantics: add a rule for generating html. However, there is no abstract syntax that describes a hyperlink! It should be a constructor of the |Inline| type, but it would defeat the purpose if we had to edit the source code of the original abstract syntax, call |deriveLang| again etc.
+
+Therefore, @aspectag@ allow us to define a seperate datatype, like so:
+
+\begin{code}
+data EXT_Inline = Href { href_address :: String, href_description :: String }
+
+$(extendAG ''EXT_Inline [ ])
+$(deriveLang "DocHref" [''EXT_Inline])
+\end{code}
 
 
 
-\subsection{aspects}
 
 
+\begin{thebibliography}{1}
 
+\bibitem{Marcos} Viera, M. First Class Syntax, Semantics, and Their Composition, PhD Thesis, Utrecht University - PEDECIBA, 2013 .
+
+\bibitem{Arrows} John Hughes, Generalising Monads to Arrows, in Science of Computer Programming 37, pp67-111, May 2000. 
+
+\bibitem{TTTAS} Arthur I. Baars, S. Doaitse Swierstra, and Marcos Viera. Typed Transformations of Typed Abstract Syntax. In TLDI '09: fourth ACM SIGPLAN Workshop on Types in Language Design and Implementation, 15-26, New York, NY, USA, 2009. ACM. 
+
+\bibitem{HList} Kiselyov, Oleg, Ralf Lämmel, and Keean Schupke. "Strongly typed heterogeneous collections." Proceedings of the 2004 ACM SIGPLAN workshop on Haskell. ACM, 2004.
+
+\bibitem{ArrowNotation} Ross Paterson. A new notation for arrows. International Conference on Functional Programming, Firenze, Italy, 3-5 September 2001, 229-240. 
+
+ 
+\bibitem{ErrorParsers} Swierstra, S. Doaitse, and Luc Duponcheel. Deterministic, error-correcting combinator parsers. Springer Berlin Heidelberg, 1996.
+
+\end{thebibliography}
 
 \end{document}

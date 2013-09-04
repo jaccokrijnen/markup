@@ -62,7 +62,3 @@ gHtml sem = proc () -> do
                                         . export cs_header        header
                                         . export cs_inline        inline
                                         . export cs_inlineL       inlineL)
-
-
-
-pHtml = compile (closeGram (gHtml undefined))

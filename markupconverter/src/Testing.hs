@@ -1,14 +1,15 @@
 module Testing (module Utils,
                 module Decl.Document,
                 module Decl.DocumentHref,
-                module Grammars.Html,
                 module Grammars.HtmlHref,
                 module Grammars.Markdown,
                 module Semantics.Html,
+                module Semantics.HtmlHref,
                 module Semantics.NumberedHeaders,
                 module Semantics.HtmlNumberedHeaders,
                 module Preprocessors,
-                module Language.Grammars.AspectAG) where
+                module Language.Grammars.AspectAG,
+                module Grammars.Latex) where
 
 
 
@@ -18,7 +19,9 @@ import Decl.DocumentHref
 import Grammars.Html
 import Grammars.HtmlHref
 import Grammars.Markdown
+import Grammars.Latex
 import Semantics.Html
+import Semantics.HtmlHref
 import Semantics.NumberedHeaders
 import Semantics.HtmlNumberedHeaders
 import Preprocessors
@@ -26,5 +29,7 @@ import Preprocessors
 import Language.Grammars.Murder
 import Language.Grammars.AspectAG
 import Language.Grammars.Murder.UUParsing
--- does not compile
-test = compile $ closeGram (gHtml semHtml)
+
+html2html input = let  parser = compile $ closeGram (gHtml semHtml)
+                       x      = result (parse parser input)
+                   in  (x emptyRecord) # output

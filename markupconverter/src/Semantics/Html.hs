@@ -12,7 +12,7 @@ import Language.Grammars.AspectAG.Derive
 
 import Decl.Document
 
-$(attLabels ["shtml"])
+$(attLabels ["output"])
 
 
 
@@ -23,89 +23,91 @@ doc = Document [Header 1  [Plain "A document"],
 
 
 semHtmlNotExtensible :: Document -> String
-semHtmlNotExtensible doc = sem_Document asp_shtml doc () # shtml
+semHtmlNotExtensible doc = sem_Document asp_output doc () # output
 
 
 
 
 ------------------------------------------
--- Initial aspect shtml (synthesized html)
+-- Initial aspect output (synthesized html)
 ------------------------------------------
 
 -- The aspect is a heterogenous list of pairs of production and rule
-asp_shtml =  (p_Document     .=. document_shtml) 
-         .*. (p_BlockL_Nil   .=. blockLnil_shtml)
-         .*. (p_BlockL_Cons  .=. blockLcons_shtml)
-         .*. (p_Header       .=. header_shtml) 
-         .*. (p_Paragraph    .=. paragraph_shtml)
-         .*. (p_InlineL_Nil  .=. inlineLnil_shtml)
-         .*. (p_InlineL_Cons .=. inlineLcons_shtml)
-         .*. (p_Plain        .=. plain_shtml)
-         .*. (p_Bold         .=. bold_shtml) 
-         .*. (p_Italics      .=. italics_shtml)
+asp_output =  (p_Document     .=. document_output) 
+         .*. (p_BlockL_Nil   .=. blockLnil_output)
+         .*. (p_BlockL_Cons  .=. blockLcons_output)
+         .*. (p_Header       .=. header_output) 
+         .*. (p_Paragraph    .=. paragraph_output)
+         .*. (p_InlineL_Nil  .=. inlineLnil_output)
+         .*. (p_InlineL_Cons .=. inlineLcons_output)
+         .*. (p_Plain        .=. plain_output)
+         .*. (p_Bold         .=. bold_output) 
+         .*. (p_Italics      .=. italics_output)
          .*. emptyRecord
 
 
 --------------------------------
--- Rules for the attribute shtml
+-- Rules for the attribute output
 --------------------------------
 
 
 -- Document production
-document_shtml = syn shtml $
+document_output = syn output $
     do blocks <- at ch_blocks
-       return $ blocks # shtml
+       return $ blocks # output
 
 
 
 -- Blocks productions
-blockLnil_shtml = syn shtml $ return ""
+blockLnil_output = syn output $ return ""
 
-blockLcons_shtml = syn shtml $
+blockLcons_output = syn output $
     do block  <- at ch_hd_BlockL_Cons
        blocks <- at ch_tl_BlockL_Cons
-       return $ block # shtml ++ blocks # shtml
+       return $ block # output ++ blocks # output
 
 
---blockLcons_shtml = use shtml (nt_BlockL .*. HNil) (++) ""
+--blockLcons_output = use output (nt_BlockL .*. HNil) (++) ""
 
 -- Block productions
-header_shtml = syn shtml $
+header_output = syn output $
     do level  <- at ch_level_header
        inls   <- at ch_inlines_header
        return $ "<h" ++ show level ++ ">" 
-                 ++ inls # shtml
+                 ++ inls # output
                  ++ "</h" ++ show level ++ ">"
+                 ++ "\n"
 
-paragraph_shtml = syn shtml $
+paragraph_output = syn output $
     do inls <- at ch_inlines_par
        return $ "<p>" 
-              ++ inls # shtml
+              ++ inls # output
               ++ "</p>"
+              ++ "\n"
 
 
 
 -- Inline productions
 
-inlineLnil_shtml = syn shtml $ return ""
-inlineLcons_shtml = syn shtml $
+inlineLnil_output = syn output $ return ""
+inlineLcons_output = syn output $
     do inl  <- at ch_hd_InlineL_Cons
        inls <- at ch_tl_InlineL_Cons
-       return $ inl # shtml ++ inls # shtml
+       return $ inl # output ++ inls # output
 
 
-plain_shtml = syn shtml $ liftM id (at ch_str_plainInl)
+plain_output = syn output $ liftM id (at ch_str_plainInl)
 
-bold_shtml  = syn shtml $ 
+bold_output  = syn output $ 
                     do inls <- at ch_inlines_boldInl
                        return $ "<b>" 
-                              ++ inls # shtml 
+                              ++ inls # output 
                               ++ "</b>"
 
-italics_shtml  = syn shtml $ 
+italics_output  = syn output $ 
                     do inls <- at ch_inlines_italInl
                        return $ "<i>" 
-                              ++ inls # shtml
+                              ++ inls # output
                               ++ "</i>"
 
 
@@ -114,16 +116,16 @@ italics_shtml  = syn shtml $
 -----------------------
 -- building the record
 
-aspDocument     = document_shtml
-aspBlockL_Nil   = blockLnil_shtml
-aspBlockL_Cons  = blockLcons_shtml
-aspHeader       = header_shtml
-aspParagraph    = paragraph_shtml
-aspInlineL_Nil  = inlineLnil_shtml
-aspInlineL_Cons = inlineLcons_shtml
-aspPlain        = plain_shtml
-aspBold         = bold_shtml
-aspItalics      = italics_shtml
+aspDocument     = document_output
+aspBlockL_Nil   = blockLnil_output
+aspBlockL_Cons  = blockLcons_output
+aspHeader       = header_output
+aspParagraph    = paragraph_output
+aspInlineL_Nil  = inlineLnil_output
+aspInlineL_Cons = inlineLcons_output
+aspPlain        = plain_output
+aspBold         = bold_output
+aspItalics      = italics_output
 
 semHtml = mkDoc aspBlockL_Cons aspBlockL_Nil aspBold
                 aspDocument aspHeader aspInlineL_Cons aspInlineL_Nil
